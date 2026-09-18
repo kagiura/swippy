@@ -1,30 +1,14 @@
-# swippy
+# Zephyrus
 
-## Prerequisites
+![banner](./docs/assets/banner-zephyrus.png)
 
-- Node.js 22+
-- pnpm (install with `corepack enable` and `corepack prepare pnpm@10.16.1 --activate`)
+Project Zephyrus is a wayfinding project aimed at creating an interactive campus map for NUS, that includes both road-level navigation and indoors navigation.
 
-## Setup
+The project consists of two web applications:
 
-1. Install dependencies:
-   ```bash
-   pnpm install
-   ```
-2. Create a `.env` file in the repository root and set your LTA key:
-   ```env
-   LTA_ACCOUNT_KEY=your_lta_account_key_here
-   FRONTEND_ORIGIN=http://localhost:5173
-   PORT=3001
-   ```
+- [Skylark](./skylark/README.md), a user-facing interactive map progressive web app (PWA).
+- [Dazzlegarden (dzg)](./dazzlegarden/README.md), an admin panel for editing and creating IMDF-standard indoor mapping files.
 
-## Run in development mode
+## Acknowledgements
 
-Run frontend and backend together:
-
-```bash
-pnpm dev
-```
-
-- Frontend: `http://localhost:5173`
-- Backend health endpoint: `http://localhost:3001/api/health`
+This project is supported by the [Centre for Computing for Social Good & Philanthropy Fellowship Programme](https://www.ccsgp.comp.nus.edu.sg/fellowship-programme).
