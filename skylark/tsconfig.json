@@ -15,8 +15,7 @@
 		"jsx": "preserve",
 		"baseUrl": ".",
 		"paths": {
-			"@/*": ["./src/*"],
-			"@dazzlegarden/*": ["../dazzlegarden/src/*"]
+			"@/*": ["./src/*"]
 		},
 		"incremental": true,
 		"plugins": [
@@ -26,11 +25,5 @@
 		]
 	},
 	"exclude": ["node_modules"],
-	"include": [
-		"next-env.d.ts",
-		"**/*.ts",
-		"**/*.tsx",
-		".next/types/**/*.ts",
-		"../dazzlegarden/src/data/radix.ts"
-	]
+	"include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"]
 }

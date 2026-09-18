@@ -8,7 +8,6 @@ import {
 	TextField,
 } from "@radix-ui/themes";
 
-import CampusSearchResults from "@/components/CampusSearchResults";
 import ClosestBuilding from "@/components/ClosestBuilding";
 import ClosestStops from "@/components/ClosestStops";
 import { IconCross, IconSearch, IconX } from "@tabler/icons-react";
@@ -69,7 +68,7 @@ export default function Page() {
 						exit={{ opacity: 0, x: 10, position: "absolute" }}
 						transition={{ damping: 120 }}
 					>
-						<CampusSearchResults searchQuery={searchQuery} />
+						{/* <CampusSearchResults searchQuery={searchQuery} /> */}
 					</motion.div>
 				) : (
 					<motion.div

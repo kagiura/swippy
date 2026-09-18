@@ -8,7 +8,6 @@ import { useWindowSize } from "usehooks-ts";
 
 import styles from "./layout.module.css";
 
-import IMDFLevelSelect from "@/components/IMDFLevelSelect";
 import Map from "@/components/Map";
 import { CARD_POSITIONS } from "@/utils/cardPositions";
 import { MapStateProvider } from "@/utils/mapState";
@@ -107,14 +106,6 @@ export default function Page({
 
 							<div className={styles.scrollSnapPoint1} />
 							<div className={styles.scrollSnapPoint2}>
-								{/* <IMDFLevelSelect
-									lat={lat}
-									lng={lng}
-									zoom={zoom}
-									className={styles.levelSelect}
-									mb="4"
-									mr="4"
-								/> */}
 							</div>
 							{/* {mapLoaded && ( */}
 							<div className={styles.pageWrapperInner}>

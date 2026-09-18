@@ -1,8 +1,6 @@
 import { DEFAULT_LAT, DEFAULT_LNG } from "@/data/geographicDefaults";
-import { IMDF_AMENITIES, IMDF_UNITS } from "@/data/imdf";
 import isbStops from "@/data/isbStops";
 import { ISBStop } from "@/types/schema";
-import { Amenity, Unit } from "@dazzlegarden/types/imdf";
 import { useDebounce } from "@uidotdev/usehooks";
 import {
 	createContext,
@@ -36,10 +34,10 @@ export const MapStateContext = createContext<{
 	pullBackCard: () => void;
 	levelOrdinal: number;
 	setLevelOrdinal: React.Dispatch<React.SetStateAction<number>>;
-	focusedUnitIDs: string[] | null;
-	focusedUnits: (Unit | null)[] | null;
-	focusedAmenityID: string | null;
-	focusedAmenity: Amenity | null;
+	// focusedUnitIDs: string[] | null;
+	// focusedUnits: (Unit | null)[] | null;
+	// focusedAmenityID: string | null;
+	// focusedAmenity: Amenity | null;
 	focusedStopName: string | null;
 	focusedStop: ISBStop | null;
 	focusedStops: FocusedStop[];
@@ -68,10 +66,10 @@ export const MapStateContext = createContext<{
 	setFocusedSegments: () => {},
 	setFocusedUnitIDs: () => {},
 	setFocusedAmenityID: () => {},
-	focusedUnitIDs: null,
-	focusedUnits: null,
-	focusedAmenityID: null,
-	focusedAmenity: null,
+	// focusedUnitIDs: null,
+	// focusedUnits: null,
+	// focusedAmenityID: null,
+	// focusedAmenity: null,
 	focusedStopName: null,
 	focusedStop: null,
 	focusedStops: [],
@@ -119,20 +117,6 @@ export function MapStateProvider({
 		() => isbStops.find((stop) => stop.name === focusedStopName) || null,
 		[focusedStopName],
 	);
-	const focusedUnits = useMemo(
-		() =>
-			focusedUnitIDs?.map(
-				(id) => IMDF_UNITS.features.find((u) => u.id === id) || null,
-			) || null,
-		[focusedUnitIDs],
-	);
-	const focusedAmenity = useMemo(
-		() =>
-			IMDF_AMENITIES.features.find(
-				(amenity) => amenity.id === focusedAmenityID,
-			) || null,
-		[focusedAmenityID],
-	);
 
 	const { dodge } = useDodgeUI();
 	const flyTo = useCallback(
@@ -174,10 +158,10 @@ export function MapStateProvider({
 				setLevelOrdinal,
 				pushAwayCard,
 				pullBackCard,
-				focusedUnitIDs,
-				focusedUnits,
-				focusedAmenityID,
-				focusedAmenity,
+				// focusedUnitIDs,
+				// focusedUnits,
+				// focusedAmenityID,
+				// focusedAmenity,
 				focusedStopName,
 				focusedStop,
 				focusedStops,

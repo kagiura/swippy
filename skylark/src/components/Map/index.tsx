@@ -17,10 +17,8 @@ import { useWindowSize } from "usehooks-ts";
 import MapMarkerYou from "./MapMarkerYou";
 
 import BusLayer from "./BusLayer";
-import IMDFLayer from "./IMDFLayer";
 
 import { SINGAPORE_BOUNDS } from "@/data/bounds";
-import { IMDF_AMENITIES, IMDF_UNITS } from "@/data/imdf";
 import isbStopsGeojson from "@/data/isbStopsGeojson";
 import { useMapState } from "@/utils/mapState";
 
@@ -155,9 +153,6 @@ export default function Map({
 				...isbStopsGeojson.features.map(
 					(feature) => "isb-stops-layer" + feature.properties?.name + "subtle",
 				),
-				...IMDF_UNITS.features.map((unit) => `unit-${unit.id}`),
-				...IMDF_UNITS.features.map((unit) => `unit-label-${unit.id}`),
-				...IMDF_AMENITIES.features.map((amenity) => `amenity-${amenity.id}`),
 			]}
 			onClick={(e) => {
 				// console.log("Clicked features ", e.features, e);
@@ -181,20 +176,6 @@ export default function Map({
 					} else if (typeof stopName === "string") {
 						router.push(`/stops/${stopName}`);
 					}
-				} else if (feature.layer?.id.startsWith("unit-label")) {
-					const unitID = feature.layer.id.replace("unit-label-", "");
-					const unit = IMDF_UNITS.features.find((u) => u.id === unitID);
-					if (unit) {
-						router.push(`/venue/${unitID}`);
-					}
-				} else if (feature.layer?.id.startsWith("amenity-")) {
-					const amenityID = feature.layer.id.replace("amenity-", "");
-					const amenity = IMDF_AMENITIES.features.find(
-						(a) => a.id === amenityID,
-					);
-					if (amenity) {
-						router.push(`/facility/${amenityID}`);
-					}
 				} else {
 					router.push("/");
 					resetFocusedState();
@@ -204,7 +185,6 @@ export default function Map({
 			{mapLoaded && (
 				<>
 					<MapMarkerYou />
-					{/* <IMDFLayer /> */}
 					<BusLayer />
 				</>
 			)}

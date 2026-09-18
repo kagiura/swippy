@@ -1,5 +1,4 @@
 packages:
-  - "dazzlegarden"
   - "skylark"
 allowBuilds:
   date-fns: true
