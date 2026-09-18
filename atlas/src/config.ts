@@ -12,14 +12,11 @@ export const config = {
 	port: num(process.env.PORT, 8787),
 
 	routingApiUrl:
-		process.env.ROUTING_API_URL ?? "https://onestoptransport.sg/api/routing",
+		process.env.ROUTING_API_URL,
 
 	lta: {
 		accountKey: process.env.LTA_ACCOUNT_KEY,
-		busArrivalUrl:
-			process.env.LTA_BUS_ARRIVAL_URL ??
-			"https://onestoptransport.sg/api/bus-arrival",
-		// Endpoint/format unconfirmed until we inspect a real payload (see feeds/trainAlerts.ts).
+		busArrivalUrl: process.env.LTA_BUS_ARRIVAL_URL,
 		trainAlertUrl: process.env.LTA_TRAIN_ALERT_URL,
 	},
 
