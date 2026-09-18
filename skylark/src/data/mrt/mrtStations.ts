@@ -1,3 +1,5 @@
+import { mrtLowFi } from "./mrtLines";
+
 interface MrtStation {
 	name: {
 		en: string;
@@ -1354,5 +1356,21 @@ const mrtStations: MrtStation[] = [
 		connections: "Yishun Bus Interchange",
 	},
 ];
+
+export function getMrtStation(name: string) {
+	return mrtStations.find((station) => station.name.en === name);
+}
+
+export function getMrtStationCoordinates(name: string) {
+	const feature = mrtLowFi.stations.features.find(
+		(f) => f.properties.name === name,
+	);
+	if (!feature) return undefined;
+
+	return {
+		longitude: feature.geometry.coordinates[0],
+		latitude: feature.geometry.coordinates[1],
+	};
+}
 
 export default mrtStations;

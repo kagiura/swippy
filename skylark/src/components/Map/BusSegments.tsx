@@ -1,43 +1,22 @@
 "use client";
 
-import "maplibre-gl/dist/maplibre-gl.css";
-import { memo, useMemo } from "react";
+import { memo } from "react";
 import { Layer, Source } from "react-map-gl/maplibre";
-
-import isbStopPairs from "@/data/isbStopPairs";
-import isbStopPairGeojson from "@/data/isbStopPairsGeojson";
-import { FocusedSegment, useMapState } from "@/utils/mapState";
+import { PUBLIC_BUS_SERVICE_COLOR } from "@/data/publicBus";
+import { getSegmentPolyline } from "@/utils/generateSegment";
+import { type FocusedSegment, useMapState } from "@/utils/mapState";
 
 function BusSegments() {
 	const { focusedSegments } = useMapState();
-	const stopPairSource = useMemo(() => {
-		return isbStopPairs.map((pair) => (
-			<Source
-				key={pair.fromName + "__" + pair.toName}
-				id={pair.fromName + "__" + pair.toName}
-				type="geojson"
-				data={isbStopPairGeojson(pair.fromName, pair.toName)}
-			/>
-		));
-	}, []);
 
 	return (
 		<>
-			{stopPairSource}
-			{isbStopPairs.map((pair) => {
-				const focus = focusedSegments.find(
-					(segment) =>
-						segment.from === pair.fromName && segment.to === pair.toName,
-				);
-
-				return (
-					<MemoizedBusSegment
-						key={pair.fromName + "__" + pair.toName}
-						pair={pair}
-						focusedSegment={focus}
-					/>
-				);
-			})}
+			{focusedSegments.map((segment) => (
+				<MemoizedBusSegment
+					key={`${segment.from}__${segment.to}`}
+					focusedSegment={segment}
+				/>
+			))}
 		</>
 	);
 }
@@ -45,31 +24,38 @@ function BusSegments() {
 export default BusSegments;
 
 const MemoizedBusSegment = memo(function BusSegment({
-	pair,
 	focusedSegment,
 }: {
-	pair: (typeof isbStopPairs)[0];
-	focusedSegment?: FocusedSegment;
+	focusedSegment: FocusedSegment;
 }) {
-	const paint = focusedSegment
-		? {
-				"line-color": focusedSegment.color,
-				"line-width": 4.5,
-				"line-opacity": 1,
-			}
-		: {
-				"line-color": "#ffffff",
-				"line-width": 0,
-				"line-opacity": 0,
-			};
+	const paint =
+		focusedSegment.status === "upcoming"
+			? {
+					"line-color": PUBLIC_BUS_SERVICE_COLOR,
+					"line-width": 4.5,
+					"line-opacity": 1,
+				}
+			: {
+					"line-color": "#4d4d4d",
+					"line-width": 2,
+					"line-opacity": 1,
+				};
+
+	const polyline = getSegmentPolyline(focusedSegment);
+	if (!polyline) return null;
 
 	return (
-		<Layer
-			id={pair.fromName + "__" + pair.toName}
-			type="line"
-			source={pair.fromName + "__" + pair.toName}
-			layout={{ "line-join": "round", "line-cap": "round" }}
-			paint={paint}
-		/>
+		<Source
+			id={`${focusedSegment.from}__${focusedSegment.to}`}
+			type="geojson"
+			data={polyline}
+		>
+			<Layer
+				id={`${focusedSegment.from}__${focusedSegment.to}`}
+				type="line"
+				layout={{ "line-join": "round", "line-cap": "round" }}
+				paint={paint}
+			/>
+		</Source>
 	);
 });

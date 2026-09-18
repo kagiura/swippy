@@ -28,6 +28,7 @@ export default function BusStops() {
 		<Source id="datamall-bus-stops" type="geojson" data={busStopsGeojson}>
 			<Layer
 				id="datamall-bus-stops-layer"
+				beforeId="mrt-stations-layer"
 				// type="circle"
 				// paint={{
 				// 	"circle-color": theme === "dark" ? "#f8fafc" : "#2563eb",
@@ -38,8 +39,9 @@ export default function BusStops() {
 				type="symbol"
 				layout={{
 					"icon-image": "map-bus",
-					"icon-size": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.075],
+					"icon-size": ["interpolate", ["linear"], ["zoom"], 15, 0.05, 16, 0.1],
 				}}
+				minzoom={14}
 			/>
 			<Layer
 				id="datamall-bus-stops-labels"

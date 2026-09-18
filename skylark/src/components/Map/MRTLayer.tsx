@@ -4,7 +4,20 @@ import { mrtHighFi, mrtLines, mrtLowFi } from "@/data/mrt/mrtLines";
 import mrtStations from "@/data/mrt/mrtStations";
 import { railStations } from "@/data/railStations";
 
-const LOW_HI_ZOOM = 12;
+const LOW_HI_ZOOM = 14;
+
+const mrtStationsGeojson = {
+	type: "FeatureCollection" as const,
+	features: [...mrtLowFi.stations.features, ...mrtHighFi.stations.features].map(
+		(feature) => ({
+			type: "Feature" as const,
+			properties: {
+				stationName: feature.properties.name,
+			},
+			geometry: feature.geometry,
+		}),
+	),
+};
 
 function MRTLayer() {
 	const { resolvedTheme: theme } = useTheme();
@@ -185,6 +198,48 @@ function MRTLayer() {
 					</>
 				);
 			})}
+			<Source id="mrt-stations" type="geojson" data={mrtStationsGeojson}>
+				<Layer
+					id="mrt-stations-layer"
+					type="symbol"
+					layout={{
+						"icon-image": "map-bus",
+						"icon-size": 0.2,
+						"icon-allow-overlap": true,
+						"text-allow-overlap": true,
+					}}
+					paint={{
+						"icon-opacity": 0,
+					}}
+				/>
+			</Source>
+
+			{/* station labels are a bit more complicated. for low fidelity zoom levels, just show it next to the low fidelity stations
+					for high fidelity, there are multiple markers for interchanges, so we only pick one interchange to use with the label */}
+
+			<Source
+				id="mrt-stations-labels-low"
+				type="geojson"
+				data={stationGeos.lowFi}
+			>
+				<Layer
+					id="mrt-stations-labels-low"
+					type="symbol"
+					minzoom={15}
+					layout={{
+						"text-field": ["get", "stationName"],
+						"text-size": 11,
+						"text-offset": [0, 1.1],
+						"text-anchor": "top",
+						"text-allow-overlap": false,
+					}}
+					paint={{
+						"text-color": theme === "dark" ? "#f8fafc" : "#172554",
+						"text-halo-color": theme === "dark" ? "#0f172a" : "#ffffff",
+						"text-halo-width": 1.5,
+					}}
+				/>
+			</Source>
 		</>
 	);
 }

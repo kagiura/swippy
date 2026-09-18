@@ -1,19 +1,24 @@
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
 "use client";
 
 import { Box, Button, Flex, Heading, Reset, Text } from "@radix-ui/themes";
+import { clsx } from "clsx";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import { useMemo, useState } from "react";
-
-import styles from "./page.module.css";
+import { useEffect, useMemo, useState } from "react";
 
 import {
 	getPublicBusService,
 	getPublicBusStop,
 	PUBLIC_BUS_SERVICE_COLOR,
 } from "@/data/publicBus";
+import {
+	type FocusedSegment,
+	type FocusedStop,
+	useMapState,
+} from "@/utils/mapState";
 import usePublicBusArrivals from "@/utils/usePublicBusArrivals";
-import { clsx } from "clsx";
+import styles from "./page.module.css";
 
 function formatArrival(estimatedArrival: string | null) {
 	if (!estimatedArrival) return "";
@@ -38,10 +43,17 @@ export default function ServiceDetails() {
 		serviceNo,
 	);
 	const routes = useMemo(
-		() => service?.routes.filter((routeStops) => routeStops.includes(busStopCode || "")) || [],
+		() =>
+			service?.routes.filter((routeStops) =>
+				routeStops.includes(busStopCode || ""),
+			) || [],
 		[service, busStopCode],
 	);
-	const route = routes[selectedDirection] || routes[0];
+	// const route = routes[selectedDirection] || routes[0];
+	const route = useMemo(
+		() => routes[selectedDirection] || routes[0],
+		[routes, selectedDirection],
+	);
 	const arrivals = (services[0]?.arrivals || []).filter(
 		(arrival) => arrival.estimatedArrival,
 	);
@@ -55,6 +67,48 @@ export default function ServiceDetails() {
 		previousStops.length <= 2 ? previousStops : previousStops.slice(-1);
 	const previousStopsHidden =
 		previousStops.length > 2 ? previousStops.slice(0, -1) : [];
+
+	const {
+		flyTo,
+		pullBackCard,
+		setFocusedStopName,
+		setFocusedSegments,
+		setFocusedStops,
+	} = useMapState();
+
+	useEffect(() => {
+		// set focused stops as all stops along the route, and focused segments as segments along the whole route
+		if (!service) {
+			setFocusedStops([]);
+			setFocusedSegments([]);
+			return;
+		}
+
+		const currentStop = busStopCode || "";
+		const currentStopIndex = route.indexOf(currentStop);
+		const focusedStops: FocusedStop[] = route.map((stop, i) => ({
+			name: stop,
+			status: i <= currentStopIndex ? "passed" : "upcoming",
+		}));
+
+		setFocusedStops(focusedStops);
+		setFocusedSegments([
+			{
+				from: route[0],
+				to: route[currentStopIndex],
+				type: "bus",
+				status: "passed",
+				service: service.serviceNo,
+			},
+			{
+				from: route[currentStopIndex],
+				to: route[route.length - 1],
+				type: "bus",
+				status: "upcoming",
+				service: service.serviceNo,
+			},
+		]);
+	}, [setFocusedSegments, setFocusedStops, service, busStopCode, route]);
 
 	if (!stop || !service || !busStopCode || !serviceNo) {
 		return <Text>Invalid public bus stop or service.</Text>;
@@ -82,9 +136,18 @@ export default function ServiceDetails() {
 					{isLoading && <Text color="gray">Loading arrivals...</Text>}
 					{error && <Text color="gray">Arrivals unavailable.</Text>}
 					{arrivals.slice(0, 3).map((arrival, index) => (
-						<Text key={`${arrival.estimatedArrival}-${index}`} className={styles.arrival} weight="bold">
+						<Text
+							key={`${arrival.estimatedArrival}-${index}`}
+							className={styles.arrival}
+							weight="bold"
+						>
 							{formatArrival(arrival.estimatedArrival)}
-							{index === 0 && <Text size="1" color="gray"> next</Text>}
+							{index === 0 && (
+								<Text size="1" color="gray">
+									{" "}
+									next
+								</Text>
+							)}
 						</Text>
 					))}
 				</Flex>
@@ -101,13 +164,17 @@ export default function ServiceDetails() {
 									size="1"
 									onClick={() => setSelectedDirection(index)}
 								>
-									{getPublicBusStop(direction[direction.length - 1])?.description || `Direction ${index + 1}`}
+									{getPublicBusStop(direction[direction.length - 1])
+										?.description || `Direction ${index + 1}`}
 								</Button>
 							))}
 						</Flex>
 					)}
 					<Text weight="bold" as="p" mb="2">
-						Route stops <Text color="gray" size="1">({route.length} stops)</Text>
+						Route stops{" "}
+						<Text color="gray" size="1">
+							({route.length} stops)
+						</Text>
 					</Text>
 					{previousStopsHidden.length > 0 && (
 						<>
@@ -117,7 +184,10 @@ export default function ServiceDetails() {
 									showAllStops && styles.shownAllStops,
 								)}
 							>
-								<Box className={styles.stopMarker} style={{ color: serviceColor }}>
+								<Box
+									className={styles.stopMarker}
+									style={{ color: serviceColor }}
+								>
 									<Box className={styles.stopDot} />
 									<Box className={styles.stopLine} />
 								</Box>
@@ -163,17 +233,19 @@ export default function ServiceDetails() {
 							isEnd={false}
 						/>
 					))}
-					{route.slice(route.indexOf(busStopCode)).map((routeStopCode, index) => (
-						<RouteStopRow
-							key={routeStopCode}
-							routeStopCode={routeStopCode}
-							busStopCode={busStopCode}
-							serviceNo={serviceNo}
-							serviceColor={serviceColor}
-							passed={false}
-							isEnd={route.indexOf(busStopCode) + index === route.length - 1}
-						/>
-					))}
+					{route
+						.slice(route.indexOf(busStopCode))
+						.map((routeStopCode, index) => (
+							<RouteStopRow
+								key={routeStopCode}
+								routeStopCode={routeStopCode}
+								busStopCode={busStopCode}
+								serviceNo={serviceNo}
+								serviceColor={serviceColor}
+								passed={false}
+								isEnd={route.indexOf(busStopCode) + index === route.length - 1}
+							/>
+						))}
 				</Box>
 			) : (
 				<Text color="gray">Route details unavailable.</Text>
@@ -207,7 +279,9 @@ function RouteStopRow({
 				passed && styles.passed,
 				isEnd && styles.isEnd,
 			)}
-			style={{ color: routeStopCode === busStopCode ? serviceColor : undefined }}
+			style={{
+				color: routeStopCode === busStopCode ? serviceColor : undefined,
+			}}
 			py="1"
 		>
 			<Box className={styles.stopMarker} style={{ color: serviceColor }}>
@@ -215,7 +289,10 @@ function RouteStopRow({
 				{!isEnd && <Box className={styles.stopLine} />}
 			</Box>
 			<Reset>
-				<Link className={styles.stopLink} href={`/stops/${routeStopCode}/${serviceNo}`}>
+				<Link
+					className={styles.stopLink}
+					href={`/stops/${routeStopCode}/${serviceNo}`}
+				>
 					<Text weight={routeStopCode === busStopCode ? "bold" : "regular"}>
 						{routeStop.description}
 					</Text>

@@ -17,14 +17,18 @@ export type FocusedSegment = {
 	from: string;
 	to: string;
 	// Hex WITH the #
-	color: string;
+	// color: string;
+	service: string;
+	type: "bus" | "mrt" | "other";
+	status: "upcoming" | "passed";
 };
 
 export type FocusedStop = {
 	name: string;
-	color: string;
+	// color: string;
 	interchange?: boolean;
 	service?: string;
+	status: "upcoming" | "passed";
 };
 
 export const MapStateContext = createContext<{

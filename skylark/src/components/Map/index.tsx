@@ -16,6 +16,7 @@ import { useMapState } from "@/utils/mapState";
 import BusLayer from "./BusLayer";
 import MapMarkerYou from "./MapMarkerYou";
 import MRTLayer from "./MRTLayer";
+import MRTStationLayer from "./MRTStationLayer";
 
 const mapStyles: CSSProperties = {
 	width: "100vw",
@@ -140,6 +141,8 @@ export default function Map({
 			interactiveLayerIds={[
 				"datamall-bus-stops-layer",
 				"datamall-bus-stops-labels",
+				"mrt-stations-layer",
+				"mrt-stations-labels",
 			]}
 			onClick={(e) => {
 				// console.log("Clicked features ", e.features, e);
@@ -152,7 +155,12 @@ export default function Map({
 					] as [[number, number], [number, number]];
 
 					const nearFeatures = e.target.queryRenderedFeatures(bbox, {
-						layers: ["datamall-bus-stops-layer", "datamall-bus-stops-labels"],
+						layers: [
+							"datamall-bus-stops-layer",
+							"datamall-bus-stops-labels",
+							"mrt-stations-layer",
+							"mrt-stations-labels",
+						],
 					});
 					if (nearFeatures.length) {
 						// find nearest feature
@@ -189,6 +197,12 @@ export default function Map({
 								router.push(`/stops/${busStopCode}`);
 								return;
 							}
+							const stationName =
+								nearestFeature.feature.properties?.stationName;
+							if (typeof stationName === "string" && zoomLevel >= 13) {
+								router.push(`/stations/${encodeURIComponent(stationName)}`);
+								return;
+							}
 						}
 					}
 
@@ -204,6 +218,14 @@ export default function Map({
 					}
 					return;
 				}
+				if (feature.layer?.id.startsWith("mrt-stations")) {
+					const stationName = feature.properties?.stationName;
+					const zoomLevel = e.target.getZoom();
+					if (typeof stationName === "string" && zoomLevel >= 13) {
+						router.push(`/stations/${encodeURIComponent(stationName)}`);
+					}
+					return;
+				}
 
 				router.push("/");
 				resetFocusedState();
@@ -213,6 +235,7 @@ export default function Map({
 				<>
 					<MapMarkerYou />
 					<MRTLayer />
+					<MRTStationLayer />
 					<BusLayer />
 				</>
 			)}

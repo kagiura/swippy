@@ -1,4 +1,5 @@
 import BusAnimatedMarker from "./BusAnimatedMarker";
+import BusSegments from "./BusSegments";
 import BusStops from "./BusStops";
 
 function BusLayer() {
@@ -6,6 +7,7 @@ function BusLayer() {
 		<>
 			<BusStops />
 			<BusAnimatedMarker />
+			<BusSegments />
 		</>
 	);
 }
