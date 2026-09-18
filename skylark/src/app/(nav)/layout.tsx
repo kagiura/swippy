@@ -3,7 +3,7 @@ import { Card, ScrollArea } from "@radix-ui/themes";
 import { useDebounce, useGeolocation } from "@uidotdev/usehooks";
 import Head from "next/head";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { MapProvider } from "react-map-gl/mapbox";
+import { MapProvider } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
 
 import styles from "./layout.module.css";

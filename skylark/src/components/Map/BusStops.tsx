@@ -1,9 +1,9 @@
 "use client";
 import getDistance from "geolib/es/getPreciseDistance";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useTheme } from "next-themes";
 import { useMemo } from "react";
-import { Layer, Source } from "react-map-gl/mapbox";
+import { Layer, Source } from "react-map-gl/maplibre";
 
 import isbStopsGeojson from "@/data/isbStopsGeojson";
 import { useMapState } from "@/utils/mapState";
@@ -11,7 +11,6 @@ import { useMapState } from "@/utils/mapState";
 function BusStops() {
 	return (
 		<>
-			<Layer id="isb-stops" type="slot" />
 			{isbStopsGeojson.features.map((feature) => {
 				return <ISBStop key={feature.properties?.name} feature={feature} />;
 			})}
@@ -65,7 +64,6 @@ function ISBStop({
 				key={"source" + id}
 			>
 				<Layer
-					slot="isb-stops"
 					key={"layer" + id}
 					id={"isb-stops-layer" + id}
 					type="symbol"
@@ -97,7 +95,6 @@ function ISBStop({
 					}}
 				/>
 				<Layer
-					slot="isb-stops"
 					key={
 						"layer" + id + "subtle" + (!!subtleStop ? "loaded" : "notloaded")
 					}

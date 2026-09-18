@@ -1,5 +1,5 @@
 import { useParams } from "next/navigation";
-import { Marker } from "react-map-gl/mapbox";
+import { Marker } from "react-map-gl/maplibre";
 import useSWR from "swr";
 
 import styles from "./BusLiveMarker.module.css";

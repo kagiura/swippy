@@ -2,7 +2,7 @@
 
 import { booleanPointInPolygon } from "@turf/boolean-point-in-polygon";
 import { useEffect, useMemo, useState } from "react";
-import { Marker } from "react-map-gl/mapbox";
+import { Marker } from "react-map-gl/maplibre";
 
 import styles from "./MapMarkerYou.module.css";
 

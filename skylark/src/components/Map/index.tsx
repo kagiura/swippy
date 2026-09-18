@@ -1,6 +1,5 @@
 "use client";
-import mapboxgl from "mapbox-gl";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
 import {
@@ -8,15 +7,11 @@ import {
 	Dispatch,
 	SetStateAction,
 	useCallback,
-	useEffect,
 	useMemo,
 } from "react";
 import ReactMapGL, {
-	Layer,
-	Source,
-	useMap,
 	ViewStateChangeEvent,
-} from "react-map-gl/mapbox";
+} from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
 
 import MapMarkerYou from "./MapMarkerYou";
@@ -28,10 +23,6 @@ import { SINGAPORE_BOUNDS } from "@/data/bounds";
 import { IMDF_AMENITIES, IMDF_UNITS } from "@/data/imdf";
 import isbStopsGeojson from "@/data/isbStopsGeojson";
 import { useMapState } from "@/utils/mapState";
-
-const MAPBOX_ACCESSTOKEN =
-	"pk.eyJ1IjoiYWR3ZW50dXJlcyIsImEiOiJjbTEzOWpzcGsxYWhlMmtyM2Vrc3QzMjd2In0.DHDRbSzDNBAFst6h9hHTbQ";
-mapboxgl.accessToken = MAPBOX_ACCESSTOKEN;
 
 const mapStyles: CSSProperties = {
 	width: "100vw",
@@ -70,7 +61,7 @@ export default function Map({
 	// const mapContainer = useRef<HTMLDivElement>(null);
 
 	const { resetFocusedState } = useMapState();
-	const { resolvedTheme: theme, themes } = useTheme();
+	const { resolvedTheme: theme } = useTheme();
 
 	const desktop = useMemo(() => pageWidth > 768, [pageWidth]);
 
@@ -111,35 +102,10 @@ export default function Map({
 		[desktop, height, pageWidth, pushAwayCard, setLat, setLng, setZoom],
 	);
 
-	const { map } = useMap();
-
-	const syncMapLightPreset = useCallback(
-		(theme: string) => {
-			if (!map) return;
-			const currentPreset = map.getConfigProperty("basemap", "lightPreset");
-			const isDark = theme === "dark";
-			const isMapDark = currentPreset === "night";
-			if (isDark === isMapDark) return; // no change needed
-			map.setConfigProperty(
-				"basemap",
-				"lightPreset",
-				theme === "dark" ? "night" : "day",
-			);
-		},
-		[map, theme],
-	);
-	useEffect(() => {
-		if (!map || !theme) return;
-		syncMapLightPreset(theme);
-	}, [map, theme]);
-
 	return (
 		<ReactMapGL
 			reuseMaps
 			id="map"
-			mapboxAccessToken={MAPBOX_ACCESSTOKEN}
-			// @ts-ignore
-			mapLib={import("mapbox-gl")}
 			latitude={lat}
 			longitude={lng}
 			zoom={zoom}
@@ -152,27 +118,22 @@ export default function Map({
 			style={mapStyles}
 			onMove={onMapMove}
 			mapStyle={
-				// theme === "light" ? "mapbox://styles/adwentures/cm19fgou1029101piep72bm11" :
-				"mapbox://styles/adwentures/cm6lgtbc200na01s24mkm30a0/draft"
+				theme === "dark"
+					? "https://tiles.openfreemap.org/styles/dark"
+					: "https://tiles.openfreemap.org/styles/positron"
 			}
-			config={{
-				basemap: {
-					lightPreset: theme === "light" ? "day" : "night",
-				},
-			}}
 			// ISB-flat\
-			onLoad={(e) => {
+			onLoad={async (e) => {
 				const map = e.target;
-				map.loadImage("/circle2.png", (error, image) => {
-					if (error || !image) {
-						console.error("Failed to load image circle", error);
-						throw error;
+				try {
+					const { data: image } = await map.loadImage("/circle2.png");
+					if (!map.hasImage("circle")) {
+						map.addImage("circle", image, { sdf: true });
 					}
-					// add image to the active style and make it SDF-enabled
-					map.addImage("circle", image, { sdf: true });
-					syncMapLightPreset(theme || themes[0]);
 					setMapLoaded(true);
-				});
+				} catch (error) {
+					console.error("Failed to load image circle", error);
+				}
 
 				// map.on("styleimagemissing", () => {
 				// 	console.warn("A styleimagemissing event occurred.");
@@ -240,7 +201,6 @@ export default function Map({
 				}
 			}}
 		>
-			<BaseMap />
 			{mapLoaded && (
 				<>
 					<MapMarkerYou />
@@ -253,22 +213,17 @@ export default function Map({
 }
 
 function BaseMap() {
-	const { resolvedTheme: theme } = useTheme();
-	return (
+	return null;
+	/*
+		The selected MapLibre style provides its own base map and labels. The old
+		Mapbox Streets source cannot be referenced from a MapLibre style.
+	*/
+	/* return (
 		<>
-			<Source
-				id="composite"
-				type="vector"
-				url="mapbox://mapbox.mapbox-streets-v8"
-			/>
 			<Layer
 				{...{
 					id: "poi-label",
 					type: "symbol",
-					metadata: {
-						"mapbox:featureComponent": "point-of-interest-labels",
-						"mapbox:group": "Point of interest labels, poi-labels",
-					},
 					source: "composite",
 					"source-layer": "poi_label",
 					minzoom: 6,
@@ -366,4 +321,5 @@ function BaseMap() {
 			/>
 		</>
 	);
+*/
 }

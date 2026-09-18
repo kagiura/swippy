@@ -17,7 +17,7 @@ import { slate, slateDark } from "@radix-ui/colors";
 import chroma from "chroma-js";
 import { useTheme } from "next-themes";
 import { Fragment, useEffect, useMemo } from "react";
-import { Layer, Source, useMap } from "react-map-gl/mapbox";
+import { Layer, Source, useMap } from "react-map-gl/maplibre";
 
 const fullHeightSubCats = [
 	// IMDF_UNIT_SUBCATEGORY.elevation,
@@ -80,11 +80,6 @@ function IMDFLayer() {
 
 	return (
 		<>
-			<Layer type="slot" id="imdf-footprint" />
-			<Layer type="slot" id="imdf-units" />
-			<Layer type="slot" id="imdf-structure" />
-			<Layer type="slot" id="imdf-unit-labels" />
-			<Layer type="slot" id="imdf-symbols" />
 			{IMDF_FOOTPRINTS.features.map((footprint) => (
 				<Fragment key={footprint.id}>
 					<Source
@@ -93,7 +88,6 @@ function IMDFLayer() {
 						id={`footprint-source-${footprint.id}`}
 					>
 						<Layer
-							slot="imdf-footprint"
 							key={footprint.id}
 							id={`footprint-${footprint.id}`}
 							type="fill"
@@ -109,7 +103,6 @@ function IMDFLayer() {
 				<Fragment key={level.id}>
 					<Source type="geojson" data={level} id={`level-source-${level.id}`}>
 						<Layer
-							slot="imdf-footprint"
 							id={`level-${level.id}`}
 							type="fill"
 							paint={{
@@ -144,7 +137,6 @@ function IMDFLayer() {
 								unit.properties.display_point &&
 								!fullHeight && (
 									<Layer
-										slot="imdf-unit-labels"
 										id={`unit-label-${unit.id}`}
 										type="symbol"
 										layout={{
@@ -169,12 +161,10 @@ function IMDFLayer() {
 								)}
 							{fullHeight ? (
 								<Layer
-									slot="imdf-structure"
 									id={`unit-${unit.id}`}
 									type={"fill-extrusion"}
 									minzoom={15}
 									paint={{
-										"fill-extrusion-emissive-strength": 1,
 										"fill-extrusion-color": color,
 										"fill-extrusion-opacity": 1,
 										"fill-extrusion-height": 1,
@@ -182,12 +172,10 @@ function IMDFLayer() {
 								/>
 							) : (
 								<Layer
-									slot="imdf-units"
 									id={`unit-${unit.id}`}
 									type="fill"
 									minzoom={15}
 									paint={{
-										"fill-emissive-strength": 1,
 										"fill-color": focused
 											? chroma(color).tint(0.025).hex()
 											: color,
@@ -211,7 +199,6 @@ function IMDFLayer() {
 					<Fragment key={amenity.id}>
 						<Source type="geojson" data={amenity}>
 							<Layer
-								slot="imdf-symbols"
 								id={`amenity-${amenity.id}`}
 								type="symbol"
 								minzoom={18}

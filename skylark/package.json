@@ -34,7 +34,7 @@
 		"fuse.js": "^7.1.0",
 		"geojson": "^0.5.0",
 		"geolib": "^3.3.4",
-		"mapbox-gl": "^3.6.0",
+		"maplibre-gl": "^5.6.2",
 		"motion": "^12.0.6",
 		"next": "14.1.1",
 		"next-pwa": "^5.6.0",

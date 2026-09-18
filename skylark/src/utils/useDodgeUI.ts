@@ -1,5 +1,5 @@
 import { useCallback, useMemo } from "react";
-import { LngLatLike, useMap } from "react-map-gl/mapbox";
+import { LngLatLike, useMap } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
 import { useMapState } from "./mapState";
 

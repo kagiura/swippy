@@ -1,7 +1,7 @@
 "use client";
-import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
 import { memo, useMemo } from "react";
-import { Layer, Source, useMap } from "react-map-gl/mapbox";
+import { Layer, Source, useMap } from "react-map-gl/maplibre";
 
 import isbStopPairs from "@/data/isbStopPairs";
 import isbStopPairGeojson from "@/data/isbStopPairsGeojson";
@@ -23,7 +23,6 @@ function BusSegments() {
 	}, []);
 	return (
 		<>
-			<Layer id="isb-segments" type="slot" />
 			{stopPairSource}
 			{isbStopPairs.map((pair) => {
 				const focus = focusedSegments?.find(
@@ -56,13 +55,11 @@ const MemoizedBusSegment = memo(function BusSegment({
 				"line-color": focusedSegment.color,
 				"line-width": 4.5,
 				"line-opacity": 1,
-				"line-emissive-strength": 1,
 			}
 		: {
 				"line-color": "#ffffff",
 				"line-width": 0,
 				"line-opacity": 0,
-				"line-emissive-strength": 1,
 			};
 
 	return (
@@ -76,7 +73,6 @@ const MemoizedBusSegment = memo(function BusSegment({
 				"line-cap": "round",
 			}}
 			paint={paint}
-			slot="isb-segments"
 		/>
 	);
 });
