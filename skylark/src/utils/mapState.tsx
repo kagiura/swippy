@@ -1,6 +1,3 @@
-import { DEFAULT_LAT, DEFAULT_LNG } from "@/data/geographicDefaults";
-import isbStops from "@/data/isbStops";
-import { ISBStop } from "@/types/schema";
 import { useDebounce } from "@uidotdev/usehooks";
 import {
 	createContext,
@@ -9,8 +6,11 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { LngLatLike, useMap } from "react-map-gl/maplibre";
+import { type LngLatLike, useMap } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
+import { DEFAULT_LAT, DEFAULT_LNG } from "@/data/geographicDefaults";
+import isbStops from "@/data/isbStops";
+import type { ISBStop } from "@/types/schema";
 import { useDodgeUI } from "./useDodgeUI";
 
 export type FocusedSegment = {
@@ -34,16 +34,10 @@ export const MapStateContext = createContext<{
 	pullBackCard: () => void;
 	levelOrdinal: number;
 	setLevelOrdinal: React.Dispatch<React.SetStateAction<number>>;
-	// focusedUnitIDs: string[] | null;
-	// focusedUnits: (Unit | null)[] | null;
-	// focusedAmenityID: string | null;
-	// focusedAmenity: Amenity | null;
 	focusedStops: FocusedStop[];
 	focusedSegments: FocusedSegment[];
 	focusedStopName: string | null;
 	focusedStop: ISBStop | null;
-	setFocusedUnitIDs: React.Dispatch<React.SetStateAction<string[] | null>>;
-	setFocusedAmenityID: React.Dispatch<React.SetStateAction<string | null>>;
 	setFocusedStops: React.Dispatch<React.SetStateAction<FocusedStop[]>>;
 	setFocusedSegments: React.Dispatch<React.SetStateAction<FocusedSegment[]>>;
 	setFocusedStopName: React.Dispatch<React.SetStateAction<string | null>>;
@@ -63,12 +57,6 @@ export const MapStateContext = createContext<{
 	pullBackCard: () => {},
 	setFocusedStops: () => {},
 	setFocusedSegments: () => {},
-	setFocusedUnitIDs: () => {},
-	setFocusedAmenityID: () => {},
-	// focusedUnitIDs: null,
-	// focusedUnits: null,
-	// focusedAmenityID: null,
-	// focusedAmenity: null,
 	focusedStops: [],
 	focusedSegments: [],
 	focusedStopName: null,
@@ -110,8 +98,6 @@ export function MapStateProvider({
 	const [focusedStops, setFocusedStops] = useState<FocusedStop[]>([]);
 	const [focusedSegments, setFocusedSegments] = useState<FocusedSegment[]>([]);
 	const [focusedStopName, setFocusedStopName] = useState<string | null>(null);
-	const [focusedUnitIDs, setFocusedUnitIDs] = useState<string[] | null>(null);
-	const [focusedAmenityID, setFocusedAmenityID] = useState<string | null>(null);
 
 	const { dodge } = useDodgeUI();
 	const focusedStop = useMemo(
@@ -133,6 +119,7 @@ export function MapStateProvider({
 			map.flyTo({
 				center: adjustedPosition,
 				zoom: targetZoom,
+				speed: 1,
 			});
 		},
 		[map, dodge],
@@ -157,17 +144,11 @@ export function MapStateProvider({
 				setLevelOrdinal,
 				pushAwayCard,
 				pullBackCard,
-				// focusedUnitIDs,
-				// focusedUnits,
-				// focusedAmenityID,
-				// focusedAmenity,
 				focusedStops,
 				focusedSegments,
 				focusedStopName,
 				focusedStop,
 				setFocusedStopName,
-				setFocusedUnitIDs,
-				setFocusedAmenityID,
 				setFocusedStops,
 				setFocusedSegments,
 				resetFocusedState,

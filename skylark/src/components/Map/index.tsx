@@ -1,25 +1,21 @@
 "use client";
 import "maplibre-gl/dist/maplibre-gl.css";
-import { useTheme } from "next-themes";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
-	CSSProperties,
-	Dispatch,
-	SetStateAction,
+	type CSSProperties,
+	type Dispatch,
+	type SetStateAction,
 	useCallback,
 	useMemo,
 } from "react";
-import ReactMapGL, {
-	ViewStateChangeEvent,
-} from "react-map-gl/maplibre";
+import ReactMapGL, { type ViewStateChangeEvent } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
-
-import MapMarkerYou from "./MapMarkerYou";
-
-import BusLayer from "./BusLayer";
-
 import { SINGAPORE_BOUNDS } from "@/data/bounds";
 import { useMapState } from "@/utils/mapState";
+import BusLayer from "./BusLayer";
+import MapMarkerYou from "./MapMarkerYou";
+import MRTLayer from "./MRTLayer";
 
 const mapStyles: CSSProperties = {
 	width: "100vw",
@@ -127,23 +123,19 @@ export default function Map({
 					if (!map.hasImage("circle")) {
 						map.addImage("circle", image, { sdf: true });
 					}
-					setMapLoaded(true);
 				} catch (error) {
 					console.error("Failed to load image circle", error);
 				}
+				try {
+					const { data: image } = await map.loadImage("/map-bus.png");
+					if (!map.hasImage("map-bus")) {
+						map.addImage("map-bus", image);
+					}
+				} catch (error) {
+					console.error("Failed to load image", error);
+				}
 
-				// map.on("styleimagemissing", () => {
-				// 	console.warn("A styleimagemissing event occurred.");
-
-				// 	map.loadImage("/circle2.png", (error, image) => {
-				// 		if (error || !image) {
-				// 			console.error("Failed to load image circle", error);
-				// 			throw error;
-				// 		}
-				// 		// add image to the active style and make it SDF-enabled
-				// 		map.addImage("circle", image, { sdf: true });
-				// 	});
-				// });
+				setMapLoaded(true);
 			}}
 			interactiveLayerIds={[
 				"datamall-bus-stops-layer",
@@ -153,17 +145,66 @@ export default function Map({
 				// console.log("Clicked features ", e.features, e);
 				const feature = e.features?.[0];
 				if (typeof feature === "undefined") {
+					const r = 16; // pixels
+					const bbox = [
+						[e.point.x - r, e.point.y - r],
+						[e.point.x + r, e.point.y + r],
+					] as [[number, number], [number, number]];
+
+					const nearFeatures = e.target.queryRenderedFeatures(bbox, {
+						layers: ["datamall-bus-stops-layer", "datamall-bus-stops-labels"],
+					});
+					if (nearFeatures.length) {
+						// find nearest feature
+						const clickedLngLat = e.lngLat;
+						const nearestFeature = nearFeatures.reduce(
+							(nearest, feature) => {
+								const featureLngLat =
+									feature.geometry.type === "Point"
+										? {
+												lng: feature.geometry.coordinates[0],
+												lat: feature.geometry.coordinates[1],
+											}
+										: null;
+								if (!featureLngLat) return nearest;
+
+								const distance = Math.sqrt(
+									(clickedLngLat.lng - featureLngLat.lng) ** 2 +
+										(clickedLngLat.lat - featureLngLat.lat) ** 2,
+								);
+								if (distance < nearest.distance) {
+									return { feature, distance };
+								}
+								return nearest;
+							},
+							{ feature: null as any, distance: Infinity },
+						);
+
+						const zoomLevel = e.target.getZoom();
+
+						if (nearestFeature.feature) {
+							const busStopCode =
+								nearestFeature.feature.properties?.busStopCode;
+							if (typeof busStopCode === "string" && zoomLevel >= 14.5) {
+								router.push(`/stops/${busStopCode}`);
+								return;
+							}
+						}
+					}
+
 					router.push("/");
 					resetFocusedState();
 					return;
 				}
 				if (feature.layer?.id.startsWith("datamall-bus-stops")) {
 					const busStopCode = feature.properties?.busStopCode;
-					if (typeof busStopCode === "string") {
+					const zoomLevel = e.target.getZoom();
+					if (typeof busStopCode === "string" && zoomLevel >= 14.5) {
 						router.push(`/stops/${busStopCode}`);
 					}
 					return;
 				}
+
 				router.push("/");
 				resetFocusedState();
 			}}
@@ -171,121 +212,10 @@ export default function Map({
 			{mapLoaded && (
 				<>
 					<MapMarkerYou />
+					<MRTLayer />
 					<BusLayer />
 				</>
 			)}
 		</ReactMapGL>
 	);
-}
-
-function BaseMap() {
-	return null;
-	/*
-		The selected MapLibre style provides its own base map and labels. The old
-		Mapbox Streets source cannot be referenced from a MapLibre style.
-	*/
-	/* return (
-		<>
-			<Layer
-				{...{
-					id: "poi-label",
-					type: "symbol",
-					source: "composite",
-					"source-layer": "poi_label",
-					minzoom: 6,
-					filter: [
-						"all",
-						[
-							"<=",
-							["get", "filterrank"],
-							[
-								"+",
-								["step", ["zoom"], 0, 16, 1, 17, 2],
-								[
-									"match",
-									["get", "class"],
-									"arts_and_entertainment",
-									0,
-									"commercial_services",
-									0,
-									"education",
-									3,
-									"food_and_drink",
-									0,
-									"food_and_drink_stores",
-									0,
-									"historic",
-									0,
-									"industrial",
-									0,
-									"landmark",
-									0,
-									"lodging",
-									0,
-									"medical",
-									0,
-									"motorist",
-									0,
-									"park_like",
-									0,
-									"place_like",
-									0,
-									"public_facilities",
-									0,
-									"religion",
-									0,
-									"sport_and_leisure",
-									0,
-									"store_like",
-									0,
-									"visitor_amenities",
-									3,
-									4,
-								],
-							],
-						],
-						[
-							"step",
-							["pitch"],
-							true,
-							50,
-							["<", ["distance-from-center"], 2],
-							60,
-							["<", ["distance-from-center"], 2.5],
-							70,
-							["<", ["distance-from-center"], 3],
-						],
-					],
-					layout: {
-						"text-size": [
-							"step",
-							["zoom"],
-							["step", ["get", "sizerank"], 18, 5, 12],
-							17,
-							["step", ["get", "sizerank"], 18, 13, 12],
-						],
-						"icon-image": "",
-										"text-font": ["Noto Sans Regular"],
-						"text-offset": [0, 0],
-						"text-anchor": [
-							"step",
-							["zoom"],
-							["step", ["get", "sizerank"], "center", 5, "top"],
-							17,
-							["step", ["get", "sizerank"], "center", 13, "top"],
-						],
-						"text-field": ["coalesce", ["get", "name_en"], ["get", "name"]],
-					},
-					paint: {
-						"text-halo-color":
-							theme === "dark" ? "hsl(0, 0%, 20%)" : "hsl(0, 0%, 100%)",
-						"text-halo-width": 0.5,
-						"text-halo-blur": 0.5,
-						"text-color": "hsl(0, 0%, 60%)",
-					},
-				}}
-			/>
-		</>
-	);
-*/
 }

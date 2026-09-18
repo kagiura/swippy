@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { Box, Button, Flex, Heading, Reset, Text } from "@radix-ui/themes";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useMemo, useState } from "react";
@@ -13,6 +13,7 @@ import {
 	PUBLIC_BUS_SERVICE_COLOR,
 } from "@/data/publicBus";
 import usePublicBusArrivals from "@/utils/usePublicBusArrivals";
+import { clsx } from "clsx";
 
 function formatArrival(estimatedArrival: string | null) {
 	if (!estimatedArrival) return "";
@@ -31,6 +32,7 @@ export default function ServiceDetails() {
 	const stop = busStopCode ? getPublicBusStop(busStopCode) : undefined;
 	const service = serviceNo ? getPublicBusService(serviceNo) : undefined;
 	const [selectedDirection, setSelectedDirection] = useState(0);
+	const [showAllStops, setShowAllStops] = useState(false);
 	const { services, error, isLoading } = usePublicBusArrivals(
 		busStopCode,
 		serviceNo,
@@ -44,6 +46,15 @@ export default function ServiceDetails() {
 		(arrival) => arrival.estimatedArrival,
 	);
 	const serviceColor = PUBLIC_BUS_SERVICE_COLOR;
+
+	const currentStopIndex = route ? route.indexOf(busStopCode || "") : -1;
+	const previousStops =
+		route && currentStopIndex > 0 ? route.slice(0, currentStopIndex) : [];
+	// only show the immediately preceding stop by default, like the old ISB stop list
+	const previousStopsShown =
+		previousStops.length <= 2 ? previousStops : previousStops.slice(-1);
+	const previousStopsHidden =
+		previousStops.length > 2 ? previousStops.slice(0, -1) : [];
 
 	if (!stop || !service || !busStopCode || !serviceNo) {
 		return <Text>Invalid public bus stop or service.</Text>;
@@ -98,37 +109,118 @@ export default function ServiceDetails() {
 					<Text weight="bold" as="p" mb="2">
 						Route stops <Text color="gray" size="1">({route.length} stops)</Text>
 					</Text>
-					{route.map((routeStopCode, index) => {
-						const routeStop = getPublicBusStop(routeStopCode);
-						if (!routeStop) return null;
-
-						return (
+					{previousStopsHidden.length > 0 && (
+						<>
 							<Flex
-								key={routeStopCode}
-								justify="between"
-								className={styles.stopDetails}
-								style={{ color: routeStopCode === busStopCode ? serviceColor : undefined }}
-								py="1"
+								className={clsx(
+									styles.showAllStopsWrapper,
+									showAllStops && styles.shownAllStops,
+								)}
 							>
 								<Box className={styles.stopMarker} style={{ color: serviceColor }}>
 									<Box className={styles.stopDot} />
-									{index < route.length - 1 && <Box className={styles.stopLine} />}
+									<Box className={styles.stopLine} />
 								</Box>
-								<Link className={styles.stopLink} href={`/stops/${routeStopCode}/${serviceNo}`}>
-									<Text weight={routeStopCode === busStopCode ? "bold" : "regular"}>
-										{index + 1}. {routeStop.description}
-									</Text>
-								</Link>
-								<Text size="1" color="gray">
-									{routeStop.code}
-								</Text>
+								<Button
+									onClick={() => setShowAllStops((prev) => !prev)}
+									variant="ghost"
+									size="1"
+									color="gray"
+									className={styles.showAllStops}
+									mt="1"
+									mb="1"
+									ml="2"
+								>
+									{showAllStops ? (
+										<>Show less</>
+									) : (
+										<>Show {previousStopsHidden.length} more stops</>
+									)}
+								</Button>
 							</Flex>
-						);
-					})}
+							{showAllStops &&
+								previousStopsHidden.map((routeStopCode, index) => (
+									<RouteStopRow
+										key={routeStopCode}
+										routeStopCode={routeStopCode}
+										busStopCode={busStopCode}
+										serviceNo={serviceNo}
+										serviceColor={serviceColor}
+										passed
+										isEnd={false}
+									/>
+								))}
+						</>
+					)}
+					{previousStopsShown.map((routeStopCode) => (
+						<RouteStopRow
+							key={routeStopCode}
+							routeStopCode={routeStopCode}
+							busStopCode={busStopCode}
+							serviceNo={serviceNo}
+							serviceColor={serviceColor}
+							passed
+							isEnd={false}
+						/>
+					))}
+					{route.slice(route.indexOf(busStopCode)).map((routeStopCode, index) => (
+						<RouteStopRow
+							key={routeStopCode}
+							routeStopCode={routeStopCode}
+							busStopCode={busStopCode}
+							serviceNo={serviceNo}
+							serviceColor={serviceColor}
+							passed={false}
+							isEnd={route.indexOf(busStopCode) + index === route.length - 1}
+						/>
+					))}
 				</Box>
 			) : (
 				<Text color="gray">Route details unavailable.</Text>
 			)}
 		</Box>
+	);
+}
+
+function RouteStopRow({
+	routeStopCode,
+	busStopCode,
+	serviceNo,
+	serviceColor,
+	passed,
+	isEnd,
+}: {
+	routeStopCode: string;
+	busStopCode: string;
+	serviceNo: string;
+	serviceColor: string;
+	passed: boolean;
+	isEnd: boolean;
+}) {
+	const routeStop = getPublicBusStop(routeStopCode);
+	if (!routeStop) return null;
+
+	return (
+		<Flex
+			className={clsx(
+				styles.stopDetails,
+				passed && styles.passed,
+				isEnd && styles.isEnd,
+			)}
+			style={{ color: routeStopCode === busStopCode ? serviceColor : undefined }}
+			py="1"
+		>
+			<Box className={styles.stopMarker} style={{ color: serviceColor }}>
+				<Box className={styles.stopDot} />
+				{!isEnd && <Box className={styles.stopLine} />}
+			</Box>
+			<Reset>
+				<Link className={styles.stopLink} href={`/stops/${routeStopCode}/${serviceNo}`}>
+					<Text weight={routeStopCode === busStopCode ? "bold" : "regular"}>
+						{routeStop.description}
+					</Text>
+				</Link>
+			</Reset>
+		</Flex>
 	);
 }

@@ -1,7 +1,6 @@
+import type { PublicBusStop } from "@/types/publicBus";
 import busStops from "./busrouter/v1/raw/bus-stops.datamall.json";
 import services from "./busrouter/v1/services.json";
-
-import { PublicBusStop } from "@/types/publicBus";
 
 type ServiceRecord = {
 	name: string;
@@ -10,7 +9,8 @@ type ServiceRecord = {
 
 const serviceRecords = services as Record<string, ServiceRecord>;
 
-export const PUBLIC_BUS_SERVICE_COLOR = "#91dc00";
+// export const PUBLIC_BUS_SERVICE_COLOR = "#91dc00";
+export const PUBLIC_BUS_SERVICE_COLOR = "#93C83D";
 
 export const publicBusStops: PublicBusStop[] = busStops.map((stop) => ({
 	code: stop.BusStopCode,

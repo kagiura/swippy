@@ -28,12 +28,17 @@ export default function BusStops() {
 		<Source id="datamall-bus-stops" type="geojson" data={busStopsGeojson}>
 			<Layer
 				id="datamall-bus-stops-layer"
-				type="circle"
-				paint={{
-					"circle-color": theme === "dark" ? "#f8fafc" : "#2563eb",
-					"circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 4],
-					"circle-stroke-color": theme === "dark" ? "#1e293b" : "#ffffff",
-					"circle-stroke-width": 1,
+				// type="circle"
+				// paint={{
+				// 	"circle-color": theme === "dark" ? "#f8fafc" : "#2563eb",
+				// 	"circle-radius": ["interpolate", ["linear"], ["zoom"], 11, 2, 16, 4],
+				// 	"circle-stroke-color": theme === "dark" ? "#1e293b" : "#ffffff",
+				// 	"circle-stroke-width": 1,
+				// }}
+				type="symbol"
+				layout={{
+					"icon-image": "map-bus",
+					"icon-size": ["interpolate", ["linear"], ["zoom"], 14, 0, 16, 0.075],
 				}}
 			/>
 			<Layer

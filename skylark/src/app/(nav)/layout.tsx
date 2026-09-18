@@ -5,12 +5,10 @@ import Head from "next/head";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapProvider } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
-
-import styles from "./layout.module.css";
-
 import Map from "@/components/Map";
 import { CARD_POSITIONS } from "@/utils/cardPositions";
 import { MapStateProvider } from "@/utils/mapState";
+import styles from "./layout.module.css";
 
 const DEFAULT_LNG = 103.77547580534053;
 const DEFAULT_LAT = 1.295994380007258;
@@ -59,7 +57,7 @@ export default function Page({
 				behavior: "smooth",
 			});
 		}
-	}, [width, height]);
+	}, [width, height, desktop]);
 
 	const [lng, setLng] = useState(DEFAULT_LNG);
 	const [lat, setLat] = useState(DEFAULT_LAT);
@@ -105,8 +103,7 @@ export default function Page({
 							/>
 
 							<div className={styles.scrollSnapPoint1} />
-							<div className={styles.scrollSnapPoint2}>
-							</div>
+							<div className={styles.scrollSnapPoint2}></div>
 							{/* {mapLoaded && ( */}
 							<div className={styles.pageWrapperInner}>
 								<Card className={styles.mainCard}>

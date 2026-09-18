@@ -11,7 +11,7 @@ import { getPublicBusStop } from "@/data/publicBus";
 import { useMapState } from "@/utils/mapState";
 
 export default function Story({ children }: { children: React.ReactNode }) {
-	const { name } = useParams();
+	const { name, service } = useParams();
 	const { flyTo, pullBackCard, resetFocusedState } = useMapState();
 	const busStopCode = typeof name === "string" ? name : undefined;
 	const stop = useMemo(
@@ -56,8 +56,9 @@ export default function Story({ children }: { children: React.ReactNode }) {
 				<Text size="2" color="gray">Stop {stop.code}</Text>
 			</Flex>
 
-			<StopTimings busStopCode={stop.code} />
-			{children}
+			<StopTimings busStopCode={stop.code} serviceToAppend={service as string}>
+				{children}
+			</StopTimings>
 		</>
 	);
 }
