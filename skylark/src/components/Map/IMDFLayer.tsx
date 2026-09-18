@@ -141,10 +141,7 @@ function IMDFLayer() {
 										type="symbol"
 										layout={{
 											"text-field": ["get", "en", ["get", "name"]],
-											"text-font": [
-												"DIN Pro Medium",
-												"Arial Unicode MS Regular",
-											],
+												"text-font": ["Noto Sans Regular"],
 											"text-size": 12,
 											"text-anchor": "center",
 											"text-justify": "auto",
@@ -208,7 +205,7 @@ function IMDFLayer() {
 									// "icon-rotation-alignment": "viewport",
 									// "icon-pitch-alignment": "map",
 									"text-field": ["get", "en", ["get", "name"]],
-									"text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+									"text-font": ["Noto Sans Regular"],
 									"text-size": 12,
 									"text-variable-anchor": ["right", "left", "top", "bottom"],
 									"text-justify": "auto",

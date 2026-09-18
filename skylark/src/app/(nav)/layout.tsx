@@ -107,14 +107,14 @@ export default function Page({
 
 							<div className={styles.scrollSnapPoint1} />
 							<div className={styles.scrollSnapPoint2}>
-								<IMDFLevelSelect
+								{/* <IMDFLevelSelect
 									lat={lat}
 									lng={lng}
 									zoom={zoom}
 									className={styles.levelSelect}
 									mb="4"
 									mr="4"
-								/>
+								/> */}
 							</div>
 							{/* {mapLoaded && ( */}
 							<div className={styles.pageWrapperInner}>

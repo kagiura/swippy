@@ -13,7 +13,14 @@ import useLocation from "@/utils/useLocation";
 import { motion } from "motion/react";
 
 export default function ClosestStops() {
-	const { latitude, longitude, error, isLocationActive, withinNusBounds } =
+	const {
+		latitude,
+		longitude,
+		error,
+		isLocationActive,
+		isLocationStale,
+		withinNusBounds,
+	} =
 		useLocation();
 	const [closestStops, setClosestStops] = useLocalStorage<
 		(ISBStop & { distance: number })[]
@@ -45,6 +52,11 @@ export default function ClosestStops() {
 
 	return (
 		<ClosestStopsTitleWrapper>
+			{isLocationStale && (
+				<Badge color="orange" size="1" mb="2">
+					Using outdated location
+				</Badge>
+			)}
 			<Accordion.Root
 				type="multiple"
 				key={closestStops

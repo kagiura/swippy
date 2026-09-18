@@ -204,7 +204,7 @@ export default function Map({
 			{mapLoaded && (
 				<>
 					<MapMarkerYou />
-					<IMDFLayer />
+					{/* <IMDFLayer /> */}
 					<BusLayer />
 				</>
 			)}
@@ -299,7 +299,7 @@ function BaseMap() {
 							["step", ["get", "sizerank"], 18, 13, 12],
 						],
 						"icon-image": "",
-						"text-font": ["DIN Pro Medium", "Arial Unicode MS Regular"],
+										"text-font": ["Noto Sans Regular"],
 						"text-offset": [0, 0],
 						"text-anchor": [
 							"step",
