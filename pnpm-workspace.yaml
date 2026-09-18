@@ -1,3 +1,6 @@
 packages:
   - "dazzlegarden"
   - "skylark"
+allowBuilds:
+  date-fns: true
+  unrs-resolver: true
