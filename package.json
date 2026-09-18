@@ -1,0 +1,8 @@
+{
+  "name": "swippy",
+  "private": true,
+  "packageManager": "pnpm@10.16.1",
+  "scripts": {
+    "dev": "pnpm --parallel --filter frontend --filter backend dev"
+  }
+}
