@@ -8,7 +8,6 @@ import {
 	TextField,
 } from "@radix-ui/themes";
 
-import ClosestBuilding from "@/components/ClosestBuilding";
 import ClosestStops from "@/components/ClosestStops";
 import { IconCross, IconSearch, IconX } from "@tabler/icons-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
@@ -80,7 +79,6 @@ export default function Page() {
 					>
 						<Flex direction="column" gap="0" mt="4">
 							<LayoutGroup>
-								<ClosestBuilding />
 								<ClosestStops />
 							</LayoutGroup>
 						</Flex>
