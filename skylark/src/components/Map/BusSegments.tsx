@@ -1,7 +1,8 @@
 "use client";
+
 import "maplibre-gl/dist/maplibre-gl.css";
 import { memo, useMemo } from "react";
-import { Layer, Source, useMap } from "react-map-gl/maplibre";
+import { Layer, Source } from "react-map-gl/maplibre";
 
 import isbStopPairs from "@/data/isbStopPairs";
 import isbStopPairGeojson from "@/data/isbStopPairsGeojson";
@@ -10,22 +11,21 @@ import { FocusedSegment, useMapState } from "@/utils/mapState";
 function BusSegments() {
 	const { focusedSegments } = useMapState();
 	const stopPairSource = useMemo(() => {
-		return isbStopPairs.map((pair) => {
-			return (
-				<Source
-					key={pair.fromName + "__" + pair.toName}
-					id={pair.fromName + "__" + pair.toName}
-					type="geojson"
-					data={isbStopPairGeojson(pair.fromName, pair.toName)}
-				/>
-			);
-		});
+		return isbStopPairs.map((pair) => (
+			<Source
+				key={pair.fromName + "__" + pair.toName}
+				id={pair.fromName + "__" + pair.toName}
+				type="geojson"
+				data={isbStopPairGeojson(pair.fromName, pair.toName)}
+			/>
+		));
 	}, []);
+
 	return (
 		<>
 			{stopPairSource}
 			{isbStopPairs.map((pair) => {
-				const focus = focusedSegments?.find(
+				const focus = focusedSegments.find(
 					(segment) =>
 						segment.from === pair.fromName && segment.to === pair.toName,
 				);
@@ -41,6 +41,7 @@ function BusSegments() {
 		</>
 	);
 }
+
 export default BusSegments;
 
 const MemoizedBusSegment = memo(function BusSegment({
@@ -64,14 +65,10 @@ const MemoizedBusSegment = memo(function BusSegment({
 
 	return (
 		<Layer
-			key={pair.fromName + "__" + pair.toName}
 			id={pair.fromName + "__" + pair.toName}
 			type="line"
 			source={pair.fromName + "__" + pair.toName}
-			layout={{
-				"line-join": "round",
-				"line-cap": "round",
-			}}
+			layout={{ "line-join": "round", "line-cap": "round" }}
 			paint={paint}
 		/>
 	);

@@ -38,15 +38,15 @@ export const MapStateContext = createContext<{
 	// focusedUnits: (Unit | null)[] | null;
 	// focusedAmenityID: string | null;
 	// focusedAmenity: Amenity | null;
-	focusedStopName: string | null;
-	focusedStop: ISBStop | null;
 	focusedStops: FocusedStop[];
 	focusedSegments: FocusedSegment[];
+	focusedStopName: string | null;
+	focusedStop: ISBStop | null;
 	setFocusedUnitIDs: React.Dispatch<React.SetStateAction<string[] | null>>;
 	setFocusedAmenityID: React.Dispatch<React.SetStateAction<string | null>>;
-	setFocusedStopName: React.Dispatch<React.SetStateAction<string | null>>;
 	setFocusedStops: React.Dispatch<React.SetStateAction<FocusedStop[]>>;
 	setFocusedSegments: React.Dispatch<React.SetStateAction<FocusedSegment[]>>;
+	setFocusedStopName: React.Dispatch<React.SetStateAction<string | null>>;
 	resetFocusedState: () => void;
 	lng: number;
 	lat: number;
@@ -61,7 +61,6 @@ export const MapStateContext = createContext<{
 	setLevelOrdinal: () => {},
 	pushAwayCard: () => {},
 	pullBackCard: () => {},
-	setFocusedStopName: () => {},
 	setFocusedStops: () => {},
 	setFocusedSegments: () => {},
 	setFocusedUnitIDs: () => {},
@@ -70,10 +69,11 @@ export const MapStateContext = createContext<{
 	// focusedUnits: null,
 	// focusedAmenityID: null,
 	// focusedAmenity: null,
-	focusedStopName: null,
-	focusedStop: null,
 	focusedStops: [],
 	focusedSegments: [],
+	focusedStopName: null,
+	focusedStop: null,
+	setFocusedStopName: () => {},
 	resetFocusedState: () => {},
 	lng: DEFAULT_LNG,
 	lat: DEFAULT_LAT,
@@ -107,18 +107,17 @@ export function MapStateProvider({
 	const { map } = useMap();
 
 	const [levelOrdinal, setLevelOrdinal] = useState<number>(0);
-	const [focusedStopName, setFocusedStopName] = useState<string | null>(null);
 	const [focusedStops, setFocusedStops] = useState<FocusedStop[]>([]);
 	const [focusedSegments, setFocusedSegments] = useState<FocusedSegment[]>([]);
+	const [focusedStopName, setFocusedStopName] = useState<string | null>(null);
 	const [focusedUnitIDs, setFocusedUnitIDs] = useState<string[] | null>(null);
 	const [focusedAmenityID, setFocusedAmenityID] = useState<string | null>(null);
 
+	const { dodge } = useDodgeUI();
 	const focusedStop = useMemo(
 		() => isbStops.find((stop) => stop.name === focusedStopName) || null,
 		[focusedStopName],
 	);
-
-	const { dodge } = useDodgeUI();
 	const flyTo = useCallback(
 		(position: LngLatLike, minZoom?: number) => {
 			if (typeof map === "undefined") {
@@ -162,13 +161,13 @@ export function MapStateProvider({
 				// focusedUnits,
 				// focusedAmenityID,
 				// focusedAmenity,
-				focusedStopName,
-				focusedStop,
 				focusedStops,
 				focusedSegments,
+				focusedStopName,
+				focusedStop,
+				setFocusedStopName,
 				setFocusedUnitIDs,
 				setFocusedAmenityID,
-				setFocusedStopName,
 				setFocusedStops,
 				setFocusedSegments,
 				resetFocusedState,

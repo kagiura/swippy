@@ -19,7 +19,6 @@ import MapMarkerYou from "./MapMarkerYou";
 import BusLayer from "./BusLayer";
 
 import { SINGAPORE_BOUNDS } from "@/data/bounds";
-import isbStopsGeojson from "@/data/isbStopsGeojson";
 import { useMapState } from "@/utils/mapState";
 
 const mapStyles: CSSProperties = {
@@ -147,12 +146,8 @@ export default function Map({
 				// });
 			}}
 			interactiveLayerIds={[
-				...isbStopsGeojson.features.map(
-					(feature) => "isb-stops-layer" + feature.properties?.name,
-				),
-				...isbStopsGeojson.features.map(
-					(feature) => "isb-stops-layer" + feature.properties?.name + "subtle",
-				),
+				"datamall-bus-stops-layer",
+				"datamall-bus-stops-labels",
 			]}
 			onClick={(e) => {
 				// console.log("Clicked features ", e.features, e);
@@ -162,24 +157,15 @@ export default function Map({
 					resetFocusedState();
 					return;
 				}
-				console.info("Clicked feature:", feature);
-				if (feature.source?.startsWith("isb-stops")) {
-					const stopName = feature.properties?.name;
-					const stop = isbStopsGeojson.features.find(
-						(feature) => feature.properties?.name === stopName,
-					);
-					const service = feature.layer?.metadata
-						? (feature.layer?.metadata as any)?.["mapbox:subtleService"]
-						: undefined;
-					if (typeof service === "string") {
-						router.push(`/stops/${stopName}/${service}`);
-					} else if (typeof stopName === "string") {
-						router.push(`/stops/${stopName}`);
+				if (feature.layer?.id.startsWith("datamall-bus-stops")) {
+					const busStopCode = feature.properties?.busStopCode;
+					if (typeof busStopCode === "string") {
+						router.push(`/stops/${busStopCode}`);
 					}
-				} else {
-					router.push("/");
-					resetFocusedState();
+					return;
 				}
+				router.push("/");
+				resetFocusedState();
 			}}
 		>
 			{mapLoaded && (

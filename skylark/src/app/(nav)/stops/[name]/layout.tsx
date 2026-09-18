@@ -1,54 +1,35 @@
 "use client";
 
 import { Flex, Heading, Reset, Text } from "@radix-ui/themes";
-import { IconArrowsRightLeft } from "@tabler/icons-react";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 
 import styles from "./layout.module.css";
 
 import StopTimings from "@/components/StopTimings";
-import isbStops from "@/data/isbStops";
+import { getPublicBusStop } from "@/data/publicBus";
 import { useMapState } from "@/utils/mapState";
 
 export default function Story({ children }: { children: React.ReactNode }) {
-	const { name, service } = useParams();
-	const {
-		flyTo,
-		pullBackCard,
-		setFocusedStopName,
-		setFocusedSegments,
-		setFocusedStops,
-	} = useMapState();
+	const { name } = useParams();
+	const { flyTo, pullBackCard, resetFocusedState } = useMapState();
+	const busStopCode = typeof name === "string" ? name : undefined;
 	const stop = useMemo(
-		() => isbStops.find((stop) => stop.name === name),
+		() => (busStopCode ? getPublicBusStop(busStopCode) : undefined),
 		[name],
 	);
 	useEffect(() => {
-		// const stopFromName = isbStops.find((stop) => stop.name === name);
 		if (!stop) {
 			console.error("stop not found", name);
 			return;
 		}
-		// if (!stop || stopFromName?.name !== stop.name) {
 		flyTo([stop.longitude, stop.latitude]);
-		setFocusedStopName(stop.name);
+		resetFocusedState();
 		pullBackCard();
-		// }
-		if (!service) {
-			setFocusedStops([]);
-			setFocusedSegments([]);
-		}
-	}, [name, flyTo, service]);
+	}, [name, stop, flyTo, pullBackCard, resetFocusedState]);
 
-	const oppStop = useMemo(
-		() => isbStops.find((_stop) => _stop.name === stop?.opposite),
-		[stop],
-	);
-
-	if (typeof name !== "string" || (service && typeof service !== "string")) {
-		return <div>Invalid stop/service name</div>;
+	if (!stop || !busStopCode) {
+		return <div>Invalid bus stop code</div>;
 	}
 
 	return (
@@ -59,7 +40,7 @@ export default function Story({ children }: { children: React.ReactNode }) {
 				mb="3"
 				mt={{ initial: "2", sm: "4" }}
 			>
-				{stop?.LongName}
+				{stop.description}
 			</Heading>
 			<Flex gap="2" mb="3">
 				<Heading
@@ -70,46 +51,13 @@ export default function Story({ children }: { children: React.ReactNode }) {
 					weight="medium"
 					className={styles.shortName}
 				>
-					{stop?.ShortName}
+						{stop.roadName}
 				</Heading>
-				{oppStop && (
-					<>
-						<Text
-							as="span"
-							size="4"
-							color="gray"
-							mt="0"
-							className={styles.oppIcon}
-							asChild
-						>
-							<Link href={`/stops/${oppStop.name}`}>
-								<IconArrowsRightLeft size={16} />
-							</Link>
-						</Text>
-
-						<Heading
-							as="h2"
-							size="4"
-							color="gray"
-							mt="0"
-							weight="medium"
-							className={styles.oppName}
-							asChild
-						>
-							<Reset>
-								<Link href={`/stops/${oppStop.name}`}>
-									{oppStop?.ShortName}
-								</Link>
-							</Reset>
-						</Heading>
-					</>
-				)}
+				<Text size="2" color="gray">Stop {stop.code}</Text>
 			</Flex>
 
-			<StopTimings stopName={name} service={service}>
-				{children}
-			</StopTimings>
-			{/* TIMINGS */}
+			<StopTimings busStopCode={stop.code} />
+			{children}
 		</>
 	);
 }

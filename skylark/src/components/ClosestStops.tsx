@@ -4,9 +4,10 @@ import { useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
 
 import styles from "./ClosestStops.module.css";
+
 import StopTimings from "./StopTimings";
 
-import { ISBStop } from "@/types/schema";
+import { PublicBusStop } from "@/types/publicBus";
 import formatDistance from "@/utils/formatDistance";
 import getClosestStops from "@/utils/getClosestStops";
 import useLocation from "@/utils/useLocation";
@@ -23,7 +24,7 @@ export default function ClosestStops() {
 	} =
 		useLocation();
 	const [closestStops, setClosestStops] = useLocalStorage<
-		(ISBStop & { distance: number })[]
+		(PublicBusStop & { distance: number })[]
 	>("closest", []);
 
 	// if user's location became available,zoom to user location
@@ -43,7 +44,7 @@ export default function ClosestStops() {
 		return (
 			<ClosestStopsTitleWrapper>
 				<Text>
-					Your location is outside the NUS campus. Search for an ISB stop with
+					Your location is outside the NUS campus. Search for a public bus stop with
 					the search bar above.
 				</Text>
 			</ClosestStopsTitleWrapper>
@@ -61,20 +62,20 @@ export default function ClosestStops() {
 				type="multiple"
 				key={closestStops
 					.slice(0, 3)
-					.map((stop) => stop.name)
+					.map((stop) => stop.code)
 					.join("--")}
-				defaultValue={closestStops.slice(0, 3).map((stop) => stop.name)}
+				defaultValue={closestStops.slice(0, 3).map((stop) => stop.code)}
 			>
 				{closestStops
 					.filter((s) => s.distance < 300)
 					.map((stop) => (
-						<Accordion.Item value={stop.name} key={stop.name} asChild>
+						<Accordion.Item value={stop.code} key={stop.code} asChild>
 							<Box mb="1" className={styles.stop} px="4">
 								<Accordion.Trigger asChild>
 									<Inset side="y" px="0">
 										<Box py="2">
 											<Text size="3" weight="medium" mr="2">
-												{stop.LongName}
+												{stop.description}
 											</Text>
 											<Badge size="1" color="gray">
 												{formatDistance(stop.distance)}
@@ -84,11 +85,7 @@ export default function ClosestStops() {
 								</Accordion.Trigger>
 								<Accordion.Content asChild>
 									<Box pb="1">
-										<StopTimings
-											stopName={stop.name}
-											hideUpdatedTime
-											hideAlternativeServices
-										/>
+												<StopTimings busStopCode={stop.code} />
 									</Box>
 								</Accordion.Content>
 							</Box>

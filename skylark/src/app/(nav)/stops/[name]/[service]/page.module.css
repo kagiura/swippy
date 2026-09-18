@@ -1,5 +1,72 @@
 .stopDetails {
 	position: relative;
+	min-height: 2.1rem;
+	align-items: flex-start;
+	color: var(--gray-11);
+}
+
+.serviceBadge {
+	display: grid;
+	place-items: center;
+	width: 2.25rem;
+	height: 2.25rem;
+	flex: 0 0 auto;
+	border-radius: var(--radius-3);
+	color: white;
+	font-weight: var(--font-weight-bold);
+	font-size: var(--font-size-2);
+}
+
+.arrivals {
+	padding: var(--space-2) var(--space-3);
+	border-radius: var(--radius-3);
+	background: var(--gray-2);
+}
+
+.arrival {
+	padding-right: var(--space-2);
+	border-right: 1px solid var(--gray-6);
+}
+
+.arrival:last-child {
+	border-right: 0;
+}
+
+.directionTabs {
+	overflow-x: auto;
+	padding-bottom: var(--space-1);
+}
+
+.stopMarker {
+	position: relative;
+	width: 1rem;
+	min-width: 1rem;
+	height: 1.8rem;
+	margin-right: var(--space-2);
+}
+
+.stopDot {
+	position: absolute;
+	top: 0.25rem;
+	left: 0.2rem;
+	width: 0.6rem;
+	height: 0.6rem;
+	border: 2.5px solid currentColor;
+	border-radius: 999px;
+	background: var(--color-panel);
+	z-index: 2;
+}
+
+.stopLine {
+	position: absolute;
+	top: 0.8rem;
+	left: 0.45rem;
+	height: 1.4rem;
+	border-left: 2.5px solid currentColor;
+}
+
+.stopLink {
+	padding-top: 0.05rem;
 }
 
 .stopDot {
