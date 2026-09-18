@@ -1,5 +1,35 @@
-import { ActiveBusResult, ShuttleServiceResult } from "@/types/schema";
+import {
+	ActiveBusResult,
+	RoutingResponse,
+	RoutingResponseSchema,
+	ShuttleServiceResult,
+} from "@/types/schema";
 import isbServices from "@/data/isbServices.json";
+import { parse } from "valibot";
+
+export type RoutingQuery = {
+	start: string;
+	end: string;
+	date: string;
+	time: string;
+	routeType?: "pt";
+};
+
+export async function getTransitRoute({
+	start,
+	end,
+	date,
+	time,
+	routeType = "pt",
+}: RoutingQuery): Promise<RoutingResponse> {
+	const params = new URLSearchParams({ routeType, start, end, date, time });
+	const response = await fetch(`/api/routing?${params}`);
+	if (!response.ok) {
+		throw new Error(`Routing request failed with status ${response.status}`);
+	}
+
+	return parse(RoutingResponseSchema, await response.json());
+}
 export async function getISBTimings(
 	stopId: string,
 ): Promise<ShuttleServiceResult> {
