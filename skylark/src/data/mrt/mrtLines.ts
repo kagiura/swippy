@@ -38,7 +38,7 @@ import {
 // Types
 // ---------------------------------------------------------------------------
 
-export type LineCode = "NSL" | "EWL" | "CGA" | "NEL" | "CCL" | "DTL" | "TEL";
+export type LineCode = "NSL" | "EWL" | "CGL" | "NEL" | "CCL" | "DTL" | "TEL";
 
 export interface MrtStationProperties {
 	name: string;
@@ -83,7 +83,7 @@ interface Track {
 const TRACKS: Track[] = [
 	{ code: "NSL", line: NSLLine, stations: NSLStations },
 	{ code: "EWL", line: EWLLine, stations: EWLStations },
-	{ code: "CGA", line: EWLSpurLine, stations: EWLSpurStations },
+	{ code: "CGL", line: EWLSpurLine, stations: EWLSpurStations },
 	{ code: "NEL", line: NELLine, stations: NELStations },
 	{ code: "CCL", line: CCLLine, stations: CCLStations, loop: true },
 	{ code: "CCL", line: CCLSpurLine, stations: CCLSpurStations },
@@ -189,7 +189,7 @@ function buildLowFiStations(entries: Map<string, StationEntry>): MrtStations {
 			return point(pickLocation(entry), {
 				name: entry.name,
 				lines,
-				interchange: lines.length > 1,
+				interchange: entry.sources.length > 1,
 			});
 		}),
 	);
@@ -205,7 +205,7 @@ function buildHighFiStations(entries: Map<string, StationEntry>): MrtStations {
 	const features: Feature<Point, MrtStationProperties>[] = [];
 
 	for (const entry of entries.values()) {
-		const interchange = linesOf(entry).length > 1;
+		const interchange = entry.sources.length > 1;
 		const seenCodes = new Set<LineCode>();
 
 		for (const { track, location } of entry.sources) {
@@ -324,3 +324,48 @@ export const mrtHighFi: MrtMap = {
 	stations: buildHighFiStations(entries),
 	segments: buildSegments(lowFiStations, "own"),
 };
+
+export const mrtLines = [
+	{
+		code: "NSL",
+		displayCode: "NSL",
+		name: "North-South Line",
+		color: "#df2827",
+	},
+	{
+		code: "EWL",
+		displayCode: "EWL",
+		name: "East-West Line",
+		color: "#009645",
+	},
+	{
+		code: "CGL",
+		displayCode: "EWL", // Changi Airport Branch Line follows the East-West Line
+		name: "Changi Airport Branch Line",
+		color: "#009645",
+	},
+	{
+		code: "NEL",
+		displayCode: "NEL",
+		name: "North East Line",
+		color: "#9900ab",
+	},
+	{
+		code: "CCL",
+		displayCode: "CCL",
+		name: "Circle Line",
+		color: "#fa9e0d",
+	},
+	{
+		code: "DTL",
+		displayCode: "DTL",
+		name: "Downtown Line",
+		color: "#0055b8",
+	},
+	{
+		code: "TEL",
+		displayCode: "TEL",
+		name: "Thomson-East Coast Line",
+		color: "#9d5918",
+	},
+];

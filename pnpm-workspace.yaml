@@ -1,5 +1,6 @@
 packages:
   - "skylark"
+  - "atlas"
 allowBuilds:
   date-fns: true
   unrs-resolver: true
