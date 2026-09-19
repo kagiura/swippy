@@ -7,11 +7,12 @@ import {
 	Text,
 	TextField,
 } from "@radix-ui/themes";
-
-import ClosestStops from "@/components/ClosestStops";
 import { IconCross, IconSearch, IconX } from "@tabler/icons-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
 import { useState } from "react";
+import ClosestStops from "@/components/ClosestStops";
+import DisruptionBanner from "@/components/DisruptionBanner";
+import { getLiveDisruptions } from "@/utils/api";
 
 export default function Page() {
 	const [searchQuery, setSearchQuery] = useState("");
@@ -57,6 +58,8 @@ export default function Page() {
 					</TextField.Slot>
 				</TextField.Root>
 			</Box>
+
+			<DisruptionBanner />
 
 			<AnimatePresence>
 				{isSearching ? (

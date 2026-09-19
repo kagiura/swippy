@@ -15,7 +15,6 @@ const app = new Hono()
 	.get("/health", (c) => c.json(getHealth()))
 	.route("/routing", routingRoute)
 	.route("/bus-arrival", busArrivalRoute)
-	// .route("/isb", isbRoute)
 	.route("/disruptions", disruptionsRoute)
 	.route("/simulate", simulateRoute);
 
