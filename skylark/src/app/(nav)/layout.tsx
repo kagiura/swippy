@@ -1,7 +1,6 @@
 "use client";
 import { Card, ScrollArea } from "@radix-ui/themes";
 import { useDebounce, useGeolocation } from "@uidotdev/usehooks";
-import Head from "next/head";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { MapProvider } from "react-map-gl/maplibre";
 import { useWindowSize } from "usehooks-ts";
@@ -13,13 +12,7 @@ import styles from "./layout.module.css";
 const DEFAULT_LNG = 103.77547580534053;
 const DEFAULT_LAT = 1.295994380007258;
 
-export default function Page({
-	title,
-	children,
-}: {
-	title?: string;
-	children: React.ReactNode;
-}) {
+export default function Page({ children }: { children: React.ReactNode }) {
 	const { width, height } = useWindowSize();
 	const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -65,12 +58,6 @@ export default function Page({
 
 	return (
 		<>
-			{title ? (
-				<Head>
-					<title>OmoteNUS | {title}</title>
-				</Head>
-			) : null}
-
 			{/* <Appbar /> */}
 			<MapProvider>
 				<MapStateProvider

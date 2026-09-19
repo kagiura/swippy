@@ -1,22 +1,25 @@
 "use client";
 
-import { Flex, Heading, Reset, Text } from "@radix-ui/themes";
+import { Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { IconArrowLeft } from "@tabler/icons-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
-
-import styles from "./layout.module.css";
 
 import StopTimings from "@/components/StopTimings";
 import { getPublicBusStop } from "@/data/publicBus";
 import { useMapState } from "@/utils/mapState";
+import styles from "./layout.module.css";
 
 export default function Story({ children }: { children: React.ReactNode }) {
 	const { name, service } = useParams();
 	const { flyTo, pullBackCard, resetFocusedState } = useMapState();
 	const busStopCode = typeof name === "string" ? name : undefined;
+	const serviceName = typeof service === "string" ? service : undefined;
+	const backHref = serviceName && busStopCode ? `/stops/${busStopCode}` : "/";
 	const stop = useMemo(
 		() => (busStopCode ? getPublicBusStop(busStopCode) : undefined),
-		[name],
+		[busStopCode],
 	);
 	useEffect(() => {
 		if (!stop) {
@@ -34,6 +37,12 @@ export default function Story({ children }: { children: React.ReactNode }) {
 
 	return (
 		<>
+			<Button asChild variant="ghost" size="2" mb="2">
+				<Link href={backHref}>
+					<IconArrowLeft size={16} />
+					Back
+				</Link>
+			</Button>
 			<Heading
 				as="h1"
 				size={{ initial: "7", sm: "8" }}
@@ -51,9 +60,11 @@ export default function Story({ children }: { children: React.ReactNode }) {
 					weight="medium"
 					className={styles.shortName}
 				>
-						{stop.roadName}
+					{stop.roadName}
 				</Heading>
-				<Text size="2" color="gray">Stop {stop.code}</Text>
+				<Text size="2" color="gray">
+					Stop {stop.code}
+				</Text>
 			</Flex>
 
 			<StopTimings busStopCode={stop.code} serviceToAppend={service as string}>

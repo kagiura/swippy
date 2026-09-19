@@ -295,8 +295,8 @@ function NavigateContent() {
 		};
 		setForm(nextForm);
 		setPlaceLabels({
-			start: searchParams.get("startName") || DEFAULT_START_LABEL,
-			end: searchParams.get("endName") || DEFAULT_END_LABEL,
+			start: searchParams.get("startName") || "",
+			end: searchParams.get("endName") || "",
 		});
 
 		const hasAllParams = ["start", "end", "date", "time"].every((key) =>
@@ -391,8 +391,8 @@ function NavigateContent() {
 			profile: "balanced",
 		};
 		const nextLabels = {
-			start: DEFAULT_START_LABEL,
-			end: DEFAULT_END_LABEL,
+			start: "",
+			end: "",
 		};
 		setPlaceLabels(nextLabels);
 		const params = new URLSearchParams({
