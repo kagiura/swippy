@@ -7,13 +7,15 @@ import {
 	Flex,
 	Heading,
 	Reset,
+	SegmentedControl,
 	Select,
 	Text,
 	TextField,
 } from "@radix-ui/themes";
 import { IconWalk } from "@tabler/icons-react";
+import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useEffect, useMemo, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 import mrtStations from "@/data/mrt/mrtStations";
 import {
@@ -26,6 +28,7 @@ import type {
 	RoutingProfile,
 } from "@/types/schema";
 import { getTransitRoute, type RoutingQuery } from "@/utils/api";
+import { getDefaultDate, getDefaultTime } from "@/utils/dateFormat";
 import type { GeocoderResult } from "@/utils/geocoderApi";
 import {
 	type FocusedSegment,
@@ -40,22 +43,10 @@ const PROFILE_OPTIONS: { value: RoutingProfile; label: string }[] = [
 	{ value: "fewer-transfers", label: "Fewer transfers/walking" },
 ];
 
-const DEFAULT_START = "1.3081592,103.8551479";
-const DEFAULT_END = "1.2739864,103.8012642";
-
-function getDefaultDate() {
-	const now = new Date();
-	return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-		now.getDate(),
-	).padStart(2, "0")}-${now.getFullYear()}`;
-}
-
-function getDefaultTime() {
-	const now = new Date();
-	return `${String(now.getHours()).padStart(2, "0")}:${String(
-		now.getMinutes(),
-	).padStart(2, "0")}:00`;
-}
+// const DEFAULT_START = "1.3081592,103.8551479";
+// const DEFAULT_END = "1.2739864,103.8012642";
+const DEFAULT_START_LABEL = "";
+const DEFAULT_END_LABEL = "";
 
 function parseCoordinates(value: string) {
 	const parts = value.split(",").map((part) => Number(part.trim()));
@@ -261,20 +252,9 @@ function Itinerary({
 }
 
 function NavigateContent() {
-	const router = useRouter();
 	const searchParams = useSearchParams();
 	const queryString = searchParams.toString();
-	const [form, setForm] = useState<RoutingQuery>({
-		start: DEFAULT_START,
-		end: DEFAULT_END,
-		date: getDefaultDate(),
-		time: getDefaultTime(),
-		profile: "balanced",
-	});
-	const [placeLabels, setPlaceLabels] = useState({
-		start: "",
-		end: "",
-	});
+
 	const [route, setRoute] = useState<Awaited<
 		ReturnType<typeof getTransitRoute>
 	> | null>(null);
@@ -283,35 +263,107 @@ function NavigateContent() {
 	const [selectedItinerary, setSelectedItinerary] =
 		useState<RoutingItinerary | null>(null);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
-	useEffect(() => {
-		const nextForm: RoutingQuery = {
-			start: searchParams.get("start") || DEFAULT_START,
-			end: searchParams.get("end") || DEFAULT_END,
-			date: searchParams.get("date") || getDefaultDate(),
-			time: searchParams.get("time") || getDefaultTime(),
-			profile:
-				(searchParams.get("profile") as RoutingProfile | null) || "balanced",
+	// The URL is the only source of truth. No copy in state.
+	const form = useMemo<RoutingQuery>(() => {
+		const params = new URLSearchParams(queryString);
+		return {
+			start: params.get("start") ?? "",
+			end: params.get("end") ?? "",
+			date: params.get("date") || getDefaultDate(),
+			time: params.get("time") || getDefaultTime(),
+			profile: (params.get("profile") as RoutingProfile | null) || "balanced",
 		};
-		setForm(nextForm);
-		setPlaceLabels({
-			start: searchParams.get("startName") || "",
-			end: searchParams.get("endName") || "",
-		});
+	}, [queryString]);
 
-		const hasAllParams = ["start", "end", "date", "time"].every((key) =>
-			searchParams.has(key),
+	const placeLabels = useMemo(() => {
+		const params = new URLSearchParams(queryString);
+		const hasStart = parseCoordinates(params.get("start") ?? "") !== null;
+		const hasEnd = parseCoordinates(params.get("end") ?? "") !== null;
+		return {
+			start: hasStart ? (params.get("startName") ?? "") : "",
+			end: hasEnd ? (params.get("endName") ?? "") : "",
+		};
+	}, [queryString]);
+
+	// One writer. It changes only the keys you pass and keeps all other keys.
+	// It reads window.location, so it never uses old values.
+	const updateParams = useCallback((changes: Record<string, string>) => {
+		const params = new URLSearchParams(window.location.search);
+		for (const [key, value] of Object.entries(changes)) {
+			params.set(key, value);
+		}
+		params.set("routeType", "pt");
+		window.history.replaceState(
+			null,
+			"",
+			`${window.location.pathname}?${params}`,
 		);
-		if (!hasAllParams) {
-			const params = new URLSearchParams({ ...nextForm, routeType: "pt" });
-			router.replace(`/navigate?${params}`);
-		}
-	}, [queryString, router, searchParams]);
+	}, []);
 
-	const validationError = useMemo(() => {
-		if (!parseCoordinates(form.start) || !parseCoordinates(form.end)) {
-			return "Coordinates must use latitude,longitude format.";
+	const [locationFailed, setLocationFailed] = useState(false);
+
+	useEffect(() => {
+		// Do not ask for GPS if the URL already has a start point.
+		if (new URLSearchParams(window.location.search).get("start")) return;
+
+		if (!("geolocation" in navigator)) {
+			setLocationFailed(true);
+			return;
 		}
+
+		navigator.geolocation.getCurrentPosition(
+			(pos) => {
+				// Do not overwrite a start point that the user selected in the meantime.
+				if (new URLSearchParams(window.location.search).get("start")) return;
+				updateParams({
+					start: `${pos.coords.latitude},${pos.coords.longitude}`,
+				});
+			},
+			() => setLocationFailed(true),
+			{ timeout: 10000 },
+		);
+	}, [updateParams]);
+
+	useEffect(() => {
+		const hasStart = () =>
+			parseCoordinates(
+				new URLSearchParams(window.location.search).get("start") ?? "",
+			) !== null;
+
+		// The previous page already sent a valid start point.
+		if (hasStart()) return;
+
+		const fail = () => {
+			setLocationFailed(true);
+			// Remove a stale "Current Location" label from the URL.
+			if (!hasStart()) updateParams({ startName: "" });
+		};
+
+		if (!("geolocation" in navigator)) {
+			fail();
+			return;
+		}
+
+		navigator.geolocation.getCurrentPosition(
+			(pos) => {
+				// Do not overwrite a place that the user selected in the meantime.
+				if (hasStart()) return;
+				updateParams({
+					start: `${pos.coords.latitude},${pos.coords.longitude}`,
+					startName: "Current Location",
+				});
+			},
+			fail,
+			{ timeout: 10000 },
+		);
+	}, [updateParams]);
+
+	const hasCoordinates =
+		parseCoordinates(form.start) !== null &&
+		parseCoordinates(form.end) !== null;
+
+	// null = no error. Do not use "" for "no error".
+	const validationError = useMemo(() => {
 		if (!/^\d{2}-\d{2}-\d{4}$/.test(form.date)) {
 			return "Date must use MM-DD-YYYY format.";
 		}
@@ -319,10 +371,10 @@ function NavigateContent() {
 			return "Time must use HH:mm or HH:mm:ss format.";
 		}
 		return null;
-	}, [form]);
+	}, [form.date, form.time]);
 
 	useEffect(() => {
-		if (validationError || !searchParams.has("start")) return;
+		if (!hasCoordinates || validationError) return;
 		let cancelled = false;
 		setLoading(true);
 		setError(null);
@@ -339,75 +391,44 @@ function NavigateContent() {
 		return () => {
 			cancelled = true;
 		};
-	}, [form, searchParams, validationError]);
+	}, [form, hasCoordinates, validationError]);
 
 	function selectPlace(field: "start" | "end", result: GeocoderResult) {
-		const nextForm = {
-			...form,
+		updateParams({
 			[field]: `${result.latitude},${result.longitude}`,
-		};
-		const nextLabels = { ...placeLabels, [field]: result.name };
-		setForm(nextForm);
-		setPlaceLabels(nextLabels);
-		const params = new URLSearchParams({
-			...nextForm,
-			startName: nextLabels.start,
-			endName: nextLabels.end,
-			routeType: "pt",
+			[`${field}Name`]: result.name,
 		});
-		router.replace(`/navigate?${params}`);
 	}
 
 	function updateField(field: "date" | "time", value: string) {
-		const nextForm = { ...form, [field]: value };
-		setForm(nextForm);
-		const params = new URLSearchParams({
-			...nextForm,
-			startName: placeLabels.start,
-			endName: placeLabels.end,
-			routeType: "pt",
-		});
-		router.replace(`/navigate?${params}`);
+		updateParams({ [field]: value });
 	}
 
 	function updateProfile(profile: RoutingProfile) {
-		const nextForm = { ...form, profile };
-		setForm(nextForm);
-		const params = new URLSearchParams({
-			...nextForm,
-			startName: placeLabels.start,
-			endName: placeLabels.end,
-			routeType: "pt",
-		});
-		router.replace(`/navigate?${params}`);
+		updateParams({ profile });
 	}
 
-	function reset() {
-		const nextForm: RoutingQuery = {
-			start: DEFAULT_START,
-			end: DEFAULT_END,
-			date: getDefaultDate(),
-			time: getDefaultTime(),
-			profile: "balanced",
-		};
-		const nextLabels = {
-			start: "",
-			end: "",
-		};
-		setPlaceLabels(nextLabels);
-		const params = new URLSearchParams({
-			...nextForm,
-			startName: nextLabels.start,
-			endName: nextLabels.end,
-			routeType: "pt",
-		});
-		router.replace(`/navigate?${params}`);
-		setRoute(null);
-	}
+	// function reset() {
+	// 	updateParams({
+	// 		start: locationStart,
+	// 		end: "",
+	// 		startName: "",
+	// 		endName: "",
+	// 		date: getDefaultDate(),
+	// 		time: getDefaultTime(),
+	// 		profile: "balanced",
+	// 	});
+	// 	setRoute(null);
+	// }
 
 	return (
 		<div className={styles.page}>
-			<Heading as="h1" size="7" mb="1">
+			{/* bback button */}
+			<Link href="/" passHref>
+				<Button variant="ghost">Back</Button>
+			</Link>
+
+			<Heading as="h1" size="7" mb="0">
 				Navigate
 			</Heading>
 
@@ -421,6 +442,12 @@ function NavigateContent() {
 					selectedLabel={placeLabels.start}
 					onSelect={(result) => selectPlace("start", result)}
 				/>
+				{locationFailed && !form.start && (
+					<Text color="gray" size="2" role="alert">
+						We couldn't get your current location, so we need you to fill it in
+						here.
+					</Text>
+				)}
 				<PlaceAutocomplete
 					label="End"
 					value={form.end}
@@ -447,7 +474,7 @@ function NavigateContent() {
 						/>
 					</label>
 				</div>
-				<label>
+				{/* <label>
 					<Text size="2" weight="bold">
 						Prioritize
 					</Text>
@@ -464,13 +491,26 @@ function NavigateContent() {
 							))}
 						</Select.Content>
 					</Select.Root>
-				</label>
+				</label> */}
+				<SegmentedControl.Root
+					mt="1"
+					value={form.profile || "balanced"}
+					onValueChange={(value) => updateProfile(value as RoutingProfile)}
+				>
+					<SegmentedControl.Item value="balanced">
+						Balanced
+					</SegmentedControl.Item>
+					<SegmentedControl.Item value="fastest">Fastest</SegmentedControl.Item>
+					<SegmentedControl.Item value="fewer-transfers">
+						Easiest
+					</SegmentedControl.Item>
+				</SegmentedControl.Root>
 				<Flex gap="2">
-					<Button type="button" onClick={reset} variant="soft">
+					{/* <Button type="button" onClick={reset} variant="soft">
 						Reset
-					</Button>
+					</Button> */}
 					{validationError && (
-						<Text color="red" size="2">
+						<Text color="red" size="2" mt="1">
 							{validationError}
 						</Text>
 					)}
@@ -481,9 +521,6 @@ function NavigateContent() {
 			{error && <Text color="red">{error}</Text>}
 			{route && !loading && (
 				<section className={styles.results}>
-					<Heading as="h2" size="5">
-						Routes
-					</Heading>
 					{route.plan.itineraries.map((itinerary) => (
 						<Itinerary
 							key={`${itinerary.startTime}-${itinerary.id}`}

@@ -2,10 +2,8 @@
 
 import { Box, Text, TextField } from "@radix-ui/themes";
 import { useEffect, useRef, useState } from "react";
-
+import { type GeocoderResult, searchPlaces } from "@/utils/geocoderApi";
 import styles from "./PlaceAutocomplete.module.css";
-
-import { GeocoderResult, searchPlaces } from "@/utils/geocoderApi";
 
 export default function PlaceAutocomplete({
 	label,
@@ -61,7 +59,9 @@ export default function PlaceAutocomplete({
 
 	return (
 		<Box className={styles.wrapper}>
-			<Text size="2" weight="bold">{label}</Text>
+			<Text size="2" weight="bold">
+				{label}
+			</Text>
 			<TextField.Root
 				value={query}
 				placeholder="Search a place"
@@ -74,7 +74,11 @@ export default function PlaceAutocomplete({
 			/>
 			{open && (loading || results.length > 0) && (
 				<Box className={styles.results} role="listbox">
-					{loading && <Text color="gray" size="2">Searching...</Text>}
+					{loading && (
+						<Text color="gray" size="2">
+							Searching...
+						</Text>
+					)}
 					{results.map((result) => (
 						<button
 							key={`${result.latitude}-${result.longitude}-${result.name}`}
@@ -88,7 +92,7 @@ export default function PlaceAutocomplete({
 					))}
 				</Box>
 			)}
-			<Text size="1" color="gray">{value}</Text>
+			{/* <Text size="1" color="gray">{value}</Text> */}
 		</Box>
 	);
 }

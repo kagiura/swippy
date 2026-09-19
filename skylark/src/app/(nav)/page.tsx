@@ -1,39 +1,50 @@
 "use client";
 import {
-	Box,
 	Flex,
 	IconButton,
 	Inset,
+	Spinner,
 	Text,
 	TextField,
 } from "@radix-ui/themes";
-import { IconCross, IconSearch, IconX } from "@tabler/icons-react";
+import {
+	IconCross,
+	IconSearch,
+	IconUserCircle,
+	IconX,
+} from "@tabler/icons-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import ClosestStops from "@/components/ClosestStops";
 import DisruptionBanner from "@/components/DisruptionBanner";
+import GeosearchResults from "@/components/GeosearchResults";
 import { getLiveDisruptions } from "@/utils/api";
+import { usePlaceSearch } from "@/utils/usePlaceSearch";
 
 export default function Page() {
-	const [searchQuery, setSearchQuery] = useState("");
 	const [isSearching, setIsSearching] = useState(false);
+
+	const { query, setQuery, results, loading } = usePlaceSearch();
 
 	return (
 		<>
-			<Box mb="5">
+			<Flex gap="2" mb="5" align="center">
 				<TextField.Root
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
+					placeholder="Search"
+					value={query}
+					onChange={(e) => setQuery(e.target.value)}
 					onFocus={() => setIsSearching(true)}
 					onBlur={() => {
 						// searching false if query is empty
-						if (searchQuery.trim() === "") {
+						if (query.trim() === "") {
 							setIsSearching(false);
 						}
 					}}
 					color="gray"
 					variant="soft"
 					radius="large"
+					style={{ flex: 1 }}
 				>
 					<TextField.Slot side="left">
 						<Text color="gray">
@@ -41,13 +52,13 @@ export default function Page() {
 						</Text>
 					</TextField.Slot>
 					<TextField.Slot side="right">
-						{!!searchQuery && (
+						{!!query && (
 							<IconButton
 								color="gray"
 								variant="ghost"
 								size="1"
 								onClick={() => {
-									setSearchQuery("");
+									setQuery("");
 									setIsSearching(false);
 								}}
 							>
@@ -56,9 +67,12 @@ export default function Page() {
 						)}
 					</TextField.Slot>
 				</TextField.Root>
-			</Box>
-
-			<DisruptionBanner />
+				<IconButton asChild color="gray" variant="soft" radius="large">
+					<Link href="/profile" aria-label="Profile">
+						<IconUserCircle width={18} height={18} />
+					</Link>
+				</IconButton>
+			</Flex>
 
 			<AnimatePresence>
 				{isSearching ? (
@@ -69,7 +83,13 @@ export default function Page() {
 						exit={{ opacity: 0, x: 10, position: "absolute" }}
 						transition={{ damping: 120 }}
 					>
-						{/* <CampusSearchResults searchQuery={searchQuery} /> */}
+						{loading ? (
+							<Flex justify="center" align="center">
+								<Spinner />
+							</Flex>
+						) : (
+							<GeosearchResults places={results} />
+						)}
 					</motion.div>
 				) : (
 					<motion.div
@@ -79,6 +99,7 @@ export default function Page() {
 						exit={{ opacity: 0, x: -10, position: "absolute" }}
 						transition={{ damping: 120 }}
 					>
+						<DisruptionBanner />
 						<Flex direction="column" gap="0" mt="4">
 							<LayoutGroup>
 								<ClosestStops />
