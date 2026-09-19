@@ -9,25 +9,22 @@ import {
 	listSimulatedAlerts,
 	removeSimulatedAlert,
 } from "../disruption/simulatedStore";
-import type {
-	DisruptionAlert,
-	DisruptionEffect,
-	LineCode,
+import {
+	parseTrainServiceAlerts,
+	SAMPLE_TRAIN_SERVICE_ALERTS,
+} from "../disruption/trainServiceAlertsSample";
+import {
+	type DisruptionAlert,
+	type DisruptionEffect,
+	LINE_CODES,
+	type LineCode,
 } from "../disruption/types";
 
 export const simulateRoute = new Hono();
 
 simulateRoute.use("*", cors({ origin: "*" }));
 
-const VALID_LINES: LineCode[] = [
-	"NSL",
-	"EWL",
-	"CGA",
-	"NEL",
-	"CCL",
-	"DTL",
-	"TEL",
-];
+const VALID_LINES = LINE_CODES;
 const VALID_EFFECTS: DisruptionEffect[] = [
 	"no-service",
 	"reduced-service",
@@ -77,6 +74,15 @@ simulateRoute.post("/disruption", async (c) => {
 simulateRoute.delete("/disruption/:id", (c) => {
 	const removed = removeSimulatedAlert(c.req.param("id"));
 	return c.json({ removed });
+});
+
+// Seeds a demo-ready scenario from a real LTA TrainServiceAlerts response,
+// instead of hand-crafting one for testing.
+simulateRoute.post("/sample", (c) => {
+	const alerts = parseTrainServiceAlerts(SAMPLE_TRAIN_SERVICE_ALERTS).map(
+		(input) => addSimulatedAlert(input),
+	);
+	return c.json({ alerts }, 201);
 });
 
 simulateRoute.post("/reset", (c) => {

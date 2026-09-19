@@ -15,9 +15,13 @@ export const config = {
 		process.env.ROUTING_API_URL,
 
 	lta: {
-		accountKey: process.env.LTA_ACCOUNT_KEY,
-		busArrivalUrl: process.env.LTA_BUS_ARRIVAL_URL,
-		trainAlertUrl: process.env.LTA_TRAIN_ALERT_URL,
+		accountKey: process.env.LTA_DATAMALL_API,
+		busArrivalUrl:
+			process.env.LTA_BUS_ARRIVAL_URL ??
+			"https://onestoptransport.sg/api/bus-arrival",
+		trainAlertUrl:
+			process.env.LTA_TRAIN_ALERT_URL ??
+			"https://datamall2.mytransport.sg/ltaodataservice/GTFSRealTimeTrainServiceAlerts",
 	},
 
 	isb: {
