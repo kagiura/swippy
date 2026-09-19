@@ -18,6 +18,17 @@ export type RoutingQuery = {
 	profile?: RoutingProfile;
 };
 
+export type DisruptionAlert = {
+	id: string;
+	effect: "no-service" | "reduced-service" | "delay" | "bridging-bus";
+	description: string;
+	lineCode: string;
+	affectedStations: string[];
+	bridgingBusStops?: string[];
+	source: "live" | "simulated";
+	createdAt: number;
+};
+
 export async function getTransitRoute({
 	start,
 	end,
@@ -36,7 +47,7 @@ export async function getTransitRoute({
 	return parse(RoutingResponseSchema, await response.json());
 }
 
-export async function getLiveDisruptions() {
+export async function getLiveDisruptions(): Promise<DisruptionAlert[]> {
 	const response = await atlasClient.disruptions.$get();
 	if (!response.ok) {
 		throw new Error(
@@ -44,5 +55,6 @@ export async function getLiveDisruptions() {
 		);
 	}
 
-	return (await response.json()).alerts;
+	const data = (await response.json()) as { alerts?: DisruptionAlert[] };
+	return data.alerts ?? [];
 }
