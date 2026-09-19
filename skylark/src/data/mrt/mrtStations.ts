@@ -710,7 +710,7 @@ const mrtStations: MrtStation[] = [
 			cn: "小印度",
 			tm: "லிட்டில் இந்தியா",
 		},
-		code: ["NE7  DT12"],
+		code: ["NE7", "DT12"],
 		line: ["NEL", "DTL"],
 	},
 	{

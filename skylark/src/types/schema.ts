@@ -238,6 +238,7 @@ export const RoutingLegSchema = object({
 	routeLongName: optional(nullable(string())),
 	duration: number(),
 	disruption: optional(RoutingDisruptionSchema),
+	intermediateStops: optional(array(RoutingPlaceSchema)),
 	legGeometry: optional(
 		object({
 			points: string(),

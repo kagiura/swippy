@@ -30,6 +30,7 @@ function MRTLayer() {
 		lowFi: mrtLowFi.stations,
 		highFi: mrtHighFi.stations,
 	};
+	const isFocusing = focusedSegments.length > 0;
 	return (
 		<>
 			<Source id="mrt-lines" type="geojson" data={railStations}>
@@ -90,6 +91,7 @@ function MRTLayer() {
 							paint={{
 								"line-color": line.color,
 								"line-width": 3,
+								"line-opacity": !isFocusing ? 1 : 0,
 							}}
 							maxzoom={LOW_HI_ZOOM}
 						/>
@@ -111,6 +113,7 @@ function MRTLayer() {
 							paint={{
 								"line-color": line.color,
 								"line-width": 3,
+								"line-opacity": !isFocusing ? 1 : 0,
 							}}
 							minzoom={LOW_HI_ZOOM}
 						/>
@@ -159,6 +162,8 @@ function MRTLayer() {
 												: ["interpolate", ["linear"], ["zoom"], 10, 0, 12, 3],
 											"circle-stroke-color": !line ? "#000" : line.color,
 											"circle-stroke-width": 2,
+											"circle-opacity": !isFocusing ? 1 : 0,
+											"circle-stroke-opacity": !isFocusing ? 1 : 0,
 										}}
 										maxzoom={LOW_HI_ZOOM}
 									/>
@@ -191,6 +196,8 @@ function MRTLayer() {
 												: ["interpolate", ["linear"], ["zoom"], 10, 0, 12, 3],
 											"circle-stroke-color": !line ? "#000" : line.color,
 											"circle-stroke-width": 2,
+											"circle-opacity": !isFocusing ? 1 : 0,
+											"circle-stroke-opacity": !isFocusing ? 1 : 0,
 										}}
 										minzoom={LOW_HI_ZOOM}
 									/>
