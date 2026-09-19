@@ -1,11 +1,13 @@
-import {
-	ActiveBusResult,
-	RoutingResponse,
-	RoutingResponseSchema,
-	ShuttleServiceResult,
-} from "@/types/schema";
-import isbServices from "@/data/isbServices.json";
 import { parse } from "valibot";
+import isbServices from "@/data/isbServices.json";
+import {
+	type ActiveBusResult,
+	type RoutingProfile,
+	type RoutingResponse,
+	RoutingResponseSchema,
+	type ShuttleServiceResult,
+} from "@/types/schema";
+import { atlasClient } from "@/utils/atlasClient";
 
 export type RoutingQuery = {
 	start: string;
@@ -13,6 +15,7 @@ export type RoutingQuery = {
 	date: string;
 	time: string;
 	routeType?: "pt";
+	profile?: RoutingProfile;
 };
 
 export async function getTransitRoute({
@@ -21,9 +24,11 @@ export async function getTransitRoute({
 	date,
 	time,
 	routeType = "pt",
+	profile = "balanced",
 }: RoutingQuery): Promise<RoutingResponse> {
-	const params = new URLSearchParams({ routeType, start, end, date, time });
-	const response = await fetch(`/api/routing?${params}`);
+	const response = await atlasClient.routing.$get({
+		query: { routeType, start, end, date, time, profile },
+	});
 	if (!response.ok) {
 		throw new Error(`Routing request failed with status ${response.status}`);
 	}

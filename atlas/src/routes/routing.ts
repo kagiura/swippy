@@ -6,9 +6,11 @@ import {
 	annotateItinerary,
 	type Itinerary,
 } from "../disruption/annotate";
-import { rankItineraries } from "../disruption/rerank";
-
-export const routingRoute = new Hono();
+import {
+	isRankingProfile,
+	type RankingProfile,
+	rankItineraries,
+} from "../disruption/rerank";
 
 // Matrix of upstream requests fired per /routing call: each mode is tried at
 // each max-walk-distance, and the resulting itineraries are merged and ranked
@@ -94,7 +96,9 @@ function dedupeItineraries(itineraries: Itinerary[]): Itinerary[] {
 	});
 }
 
-routingRoute.get("/", async (c) => {
+// Chained (not a separate .get() call) so the response type is captured for
+// RPC - see index.ts's AppType export.
+export const routingRoute = new Hono().get("/", async (c) => {
 	if (!config.routingApiUrl || !config.onemapApiToken) {
 		return c.json(
 			{ error: "ROUTING_API_URL and ONEMAP_API_TOKEN are not configured" },
@@ -107,10 +111,19 @@ routingRoute.get("/", async (c) => {
 	const end = c.req.query("end");
 	const date = c.req.query("date");
 	const time = c.req.query("time");
+	const profileParam = c.req.query("profile") || "balanced";
 
 	if (!start || !end || !date || !time) {
 		return c.json({ error: "start, end, date, and time are required" }, 400);
 	}
+
+	if (!isRankingProfile(profileParam)) {
+		return c.json(
+			{ error: `profile must be one of: balanced, fastest, fewer-transfers` },
+			400,
+		);
+	}
+	const profile: RankingProfile = profileParam;
 
 	if (routeType !== "pt") {
 		return c.json({ error: "Only routeType=pt is supported" }, 400);
@@ -157,11 +170,15 @@ routingRoute.get("/", async (c) => {
 			.flatMap((r) => r.itineraries)
 			.map((itinerary) => annotateItinerary(itinerary, alerts)),
 	);
-	const { itineraries: ranked, rerankApplied } = rankItineraries(merged);
+	const { itineraries: ranked, rerankApplied } = rankItineraries(
+		merged,
+		profile,
+	);
 
 	return c.json({
 		plan: { ...succeeded[0].plan, itineraries: ranked },
 		rerankApplied,
+		profile,
 		combosRequested: combos.length,
 		combosSucceeded: succeeded.length,
 	});

@@ -1,18 +1,30 @@
 "use client";
 
-import { Button, Flex, Heading, Text, TextField } from "@radix-ui/themes";
+import {
+	Button,
+	Flex,
+	Heading,
+	Select,
+	Text,
+	TextField,
+} from "@radix-ui/themes";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
-
+import PlaceAutocomplete from "@/components/PlaceAutocomplete";
+import type {
+	RoutingItinerary,
+	RoutingLeg,
+	RoutingProfile,
+} from "@/types/schema";
+import { getTransitRoute, type RoutingQuery } from "@/utils/api";
+import type { GeocoderResult } from "@/utils/geocoderApi";
 import styles from "./page.module.css";
 
-import PlaceAutocomplete from "@/components/PlaceAutocomplete";
-import {
-	getTransitRoute,
-	RoutingQuery,
-} from "@/utils/api";
-import { GeocoderResult } from "@/utils/geocoderApi";
-import { RoutingItinerary, RoutingLeg } from "@/types/schema";
+const PROFILE_OPTIONS: { value: RoutingProfile; label: string }[] = [
+	{ value: "balanced", label: "Balanced" },
+	{ value: "fastest", label: "Fastest arrival" },
+	{ value: "fewer-transfers", label: "Fewer transfers/walking" },
+];
 
 const DEFAULT_START = "1.3081592,103.8551479";
 const DEFAULT_END = "1.2739864,103.8012642";
@@ -75,8 +87,8 @@ function Itinerary({ itinerary }: { itinerary: RoutingItinerary }) {
 						{formatTime(itinerary.startTime)} - {formatTime(itinerary.endTime)}
 					</Heading>
 					<Text color="gray" size="2">
-						{formatDuration(itinerary.duration)} · {itinerary.transfers} transfers · $
-						{itinerary.fare}
+						{formatDuration(itinerary.duration)} · {itinerary.transfers}{" "}
+						transfers · ${itinerary.fare}
 					</Text>
 				</div>
 				<Text color="gray" size="2">
@@ -113,23 +125,26 @@ function NavigateContent() {
 		end: DEFAULT_END,
 		date: getDefaultDate(),
 		time: getDefaultTime(),
+		profile: "balanced",
 	});
 	const [placeLabels, setPlaceLabels] = useState({
 		start: DEFAULT_START_LABEL,
 		end: DEFAULT_END_LABEL,
 	});
-	const [route, setRoute] = useState<Awaited<ReturnType<typeof getTransitRoute>> | null>(
-		null,
-	);
+	const [route, setRoute] = useState<Awaited<
+		ReturnType<typeof getTransitRoute>
+	> | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
 
 	useEffect(() => {
-		const nextForm = {
+		const nextForm: RoutingQuery = {
 			start: searchParams.get("start") || DEFAULT_START,
 			end: searchParams.get("end") || DEFAULT_END,
 			date: searchParams.get("date") || getDefaultDate(),
 			time: searchParams.get("time") || getDefaultTime(),
+			profile:
+				(searchParams.get("profile") as RoutingProfile | null) || "balanced",
 		};
 		setForm(nextForm);
 		setPlaceLabels({
@@ -180,7 +195,10 @@ function NavigateContent() {
 	}, [form, searchParams, validationError]);
 
 	function selectPlace(field: "start" | "end", result: GeocoderResult) {
-		const nextForm = { ...form, [field]: `${result.latitude},${result.longitude}` };
+		const nextForm = {
+			...form,
+			[field]: `${result.latitude},${result.longitude}`,
+		};
 		const nextLabels = { ...placeLabels, [field]: result.name };
 		setForm(nextForm);
 		setPlaceLabels(nextLabels);
@@ -205,12 +223,25 @@ function NavigateContent() {
 		router.replace(`/navigate?${params}`);
 	}
 
+	function updateProfile(profile: RoutingProfile) {
+		const nextForm = { ...form, profile };
+		setForm(nextForm);
+		const params = new URLSearchParams({
+			...nextForm,
+			startName: placeLabels.start,
+			endName: placeLabels.end,
+			routeType: "pt",
+		});
+		router.replace(`/navigate?${params}`);
+	}
+
 	function reset() {
-		const nextForm = {
+		const nextForm: RoutingQuery = {
 			start: DEFAULT_START,
 			end: DEFAULT_END,
 			date: getDefaultDate(),
 			time: getDefaultTime(),
+			profile: "balanced",
 		};
 		const nextLabels = {
 			start: DEFAULT_START_LABEL,
@@ -236,7 +267,10 @@ function NavigateContent() {
 				Plan a public transport route between two coordinates.
 			</Text>
 
-			<form className={styles.form} onSubmit={(event) => event.preventDefault()}>
+			<form
+				className={styles.form}
+				onSubmit={(event) => event.preventDefault()}
+			>
 				<PlaceAutocomplete
 					label="Start"
 					value={form.start}
@@ -251,17 +285,51 @@ function NavigateContent() {
 				/>
 				<div className={styles.row}>
 					<label>
-						<Text size="2" weight="bold">Date</Text>
-						<TextField.Root value={form.date} onChange={(event) => updateField("date", event.target.value)} />
+						<Text size="2" weight="bold">
+							Date
+						</Text>
+						<TextField.Root
+							value={form.date}
+							onChange={(event) => updateField("date", event.target.value)}
+						/>
 					</label>
 					<label>
-						<Text size="2" weight="bold">Time</Text>
-						<TextField.Root value={form.time} onChange={(event) => updateField("time", event.target.value)} />
+						<Text size="2" weight="bold">
+							Time
+						</Text>
+						<TextField.Root
+							value={form.time}
+							onChange={(event) => updateField("time", event.target.value)}
+						/>
 					</label>
 				</div>
+				<label>
+					<Text size="2" weight="bold">
+						Prioritize
+					</Text>
+					<Select.Root
+						value={form.profile || "balanced"}
+						onValueChange={(value) => updateProfile(value as RoutingProfile)}
+					>
+						<Select.Trigger />
+						<Select.Content>
+							{PROFILE_OPTIONS.map((option) => (
+								<Select.Item key={option.value} value={option.value}>
+									{option.label}
+								</Select.Item>
+							))}
+						</Select.Content>
+					</Select.Root>
+				</label>
 				<Flex gap="2">
-					<Button type="button" onClick={reset} variant="soft">Reset</Button>
-					{validationError && <Text color="red" size="2">{validationError}</Text>}
+					<Button type="button" onClick={reset} variant="soft">
+						Reset
+					</Button>
+					{validationError && (
+						<Text color="red" size="2">
+							{validationError}
+						</Text>
+					)}
 				</Flex>
 			</form>
 
@@ -269,9 +337,14 @@ function NavigateContent() {
 			{error && <Text color="red">{error}</Text>}
 			{route && !loading && (
 				<section className={styles.results}>
-					<Heading as="h2" size="5">Routes</Heading>
+					<Heading as="h2" size="5">
+						Routes
+					</Heading>
 					{route.plan.itineraries.map((itinerary, index) => (
-						<Itinerary key={`${itinerary.startTime}-${index}`} itinerary={itinerary} />
+						<Itinerary
+							key={`${itinerary.startTime}-${index}`}
+							itinerary={itinerary}
+						/>
 					))}
 				</section>
 			)}
