@@ -30,10 +30,10 @@ export default function Layout({ children }: { children: ReactNode }) {
 	);
 }
 
-const APP_NAME = "Skylark";
-const APP_DEFAULT_TITLE = "Skylark";
-const APP_TITLE_TEMPLATE = "%s - Skylark";
-const APP_DESCRIPTION = "Kent Ridge, at your fingertips.";
+const APP_NAME = "Swippy";
+const APP_DEFAULT_TITLE = "Swippy";
+const APP_TITLE_TEMPLATE = "%s - Swippy";
+const APP_DESCRIPTION = "Singapore, at your fingertips.";
 
 export const metadata: Metadata = {
 	applicationName: APP_NAME,

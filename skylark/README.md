@@ -2,7 +2,7 @@
 
 ![banner](./docs/assets/banner-skylark.png)
 
-Skylark is an interactive map for the National University of Singapore's Kent Ridge campus. Skylark is part of [Project Zephyrus](../README.md), a wayfinding project for the National University of Singapore.
+Swippy is an interactive map for Singapore. Swippy is part of [Project Zephyrus](../README.md), a wayfinding project for the National University of Singapore.
 
 ## Acknowledgements
 
