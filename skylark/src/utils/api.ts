@@ -1,4 +1,4 @@
-import { parse } from "valibot";
+import { parse, safeParse } from "valibot";
 import isbServices from "@/data/isbServices.json";
 import {
 	type ActiveBusResult,
@@ -32,8 +32,12 @@ export async function getTransitRoute({
 	if (!response.ok) {
 		throw new Error(`Routing request failed with status ${response.status}`);
 	}
-
-	return parse(RoutingResponseSchema, await response.json());
+	const result = safeParse(RoutingResponseSchema, await response.json());
+	if (!result.success) {
+		console.log(result.issues);
+		throw new Error(`Failed to parse routing response: ${result.issues}`);
+	}
+	return result.output;
 }
 
 export async function getLiveDisruptions() {

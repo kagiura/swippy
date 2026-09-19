@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
+/** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
 "use client";
 
 import {
@@ -107,6 +108,7 @@ function Itinerary({
 		setFocusedStops,
 	} = useMapState();
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		// set focused stops as all stops along the route, and focused segments as segments along the whole route
 		if (selectedItinerary === null) {
@@ -150,21 +152,21 @@ function Itinerary({
 			if (leg.mode === "WALK" && leg.distance < 170) return;
 			if (leg.mode === "WALK") return; //for now
 			focusedStops.push(
-				{ name: leg.from.name, status: "upcoming" },
-				{ name: leg.to.name, status: "upcoming" },
+				{ name: leg.from?.name || "", status: "upcoming" },
+				{ name: leg.to?.name || "", status: "upcoming" },
 			);
 			focusedSegments.push({
-				from: leg.from.stopCode,
-				to: leg.to.stopCode,
+				from: leg.from?.stopCode || "",
+				to: leg.to?.stopCode || "",
 				type: leg.mode === "subway" ? "mrt" : "bus",
 				status: "upcoming",
-				service: leg.routeId,
+				service: leg.routeId || "",
 			});
 		});
 
 		setFocusedStops(focusedStops);
 		setFocusedSegments(focusedSegments);
-	}, [setFocusedSegments, setFocusedStops, selectedItinerary]);
+	}, [setFocusedSegments, setFocusedStops, selectedItinerary, itinerary.id]);
 	const isSelected = selectedItinerary?.id === itinerary.id;
 	return (
 		<article className={styles.itinerary}>
@@ -256,6 +258,7 @@ function NavigateContent() {
 	const [selectedItinerary, setSelectedItinerary] =
 		useState<RoutingItinerary | null>(null);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
 	useEffect(() => {
 		const nextForm: RoutingQuery = {
 			start: searchParams.get("start") || DEFAULT_START,
