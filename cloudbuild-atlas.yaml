@@ -3,7 +3,7 @@ substitutions:
   _REPOSITORY: skylark
   _SERVICE: atlas
   _IMAGE: atlas
-  _CORS_ALLOWED_ORIGINS: https://YOUR_SKYLARK_CLOUD_RUN_URL
+  _CORS_ALLOWED_ORIGINS: https://skylark-365419808924.us-central1.run.app
 
 options:
   logging: CLOUD_LOGGING_ONLY
