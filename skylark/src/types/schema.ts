@@ -212,6 +212,11 @@ export type ISBService = {
 
 export const RoutingPlaceSchema = object({
 	name: string(),
+	stopCode: string(),
+	lon: number(),
+	lat: number(),
+	arrival: number(),
+	departure: number(),
 });
 
 export const RoutingDisruptionSchema = object({
@@ -225,6 +230,7 @@ export const RoutingLegSchema = object({
 	distance: number(),
 	mode: string(),
 	route: string(),
+	routeId: string(),
 	from: RoutingPlaceSchema,
 	to: RoutingPlaceSchema,
 	agencyName: optional(nullable(string())),
@@ -232,6 +238,7 @@ export const RoutingLegSchema = object({
 	routeLongName: optional(nullable(string())),
 	duration: number(),
 	disruption: optional(RoutingDisruptionSchema),
+	legGeometry: optional(string()),
 });
 
 export const RoutingItinerarySchema = object({
@@ -243,6 +250,7 @@ export const RoutingItinerarySchema = object({
 	transfers: number(),
 	fare: string(),
 	legs: array(RoutingLegSchema),
+	id: string(),
 });
 
 export const RoutingPlanSchema = object({
