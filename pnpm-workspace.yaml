@@ -3,4 +3,5 @@ packages:
   - "atlas"
 allowBuilds:
   date-fns: true
+  protobufjs: true
   unrs-resolver: true
