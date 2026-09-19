@@ -14,7 +14,7 @@ function formatArrival(estimatedArrival: string | null) {
 		0,
 		Math.round((arrival.getTime() - Date.now()) / 60_000),
 	);
-	return minutes === 0 ? "Arriving" : `${minutes} min`;
+	return minutes === 0 ? "Arr" : `${minutes} m`;
 }
 
 function StopNameListing({ stopCodes }: { stopCodes: string[] }) {

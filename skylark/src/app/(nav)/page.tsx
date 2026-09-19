@@ -22,7 +22,6 @@ export default function Page() {
 		<>
 			<Box mb="5">
 				<TextField.Root
-					placeholder="Search NUS"
 					value={searchQuery}
 					onChange={(e) => setSearchQuery(e.target.value)}
 					onFocus={() => setIsSearching(true)}

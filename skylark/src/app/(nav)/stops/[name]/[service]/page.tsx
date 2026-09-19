@@ -27,7 +27,7 @@ function formatArrival(estimatedArrival: string | null) {
 		0,
 		Math.round((new Date(estimatedArrival).getTime() - Date.now()) / 60_000),
 	);
-	return minutes === 0 ? "Arriving" : `${minutes} min`;
+	return minutes === 0 ? "Arr" : `${minutes} m`;
 }
 
 export default function ServiceDetails() {
