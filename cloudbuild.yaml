@@ -1,5 +1,5 @@
 substitutions:
-  _REGION: asia-southeast1
+  _REGION: us-central1
   _REPOSITORY: skylark
   _SERVICE: skylark
   _IMAGE: skylark
