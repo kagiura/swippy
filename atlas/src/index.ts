@@ -1,4 +1,6 @@
 import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger } from "hono/logger";
 import { config } from "./config";
 import { startTrainAlertsPoller } from "./feeds/trainAlerts";
 import { getHealth } from "./health";
@@ -9,12 +11,15 @@ import { routingRoute } from "./routes/routing";
 import { simulateRoute } from "./routes/simulate";
 
 const app = new Hono()
+	.use("*", cors({ origin: config.corsAllowedOrigins }))
 	.get("/health", (c) => c.json(getHealth()))
 	.route("/routing", routingRoute)
 	.route("/bus-arrival", busArrivalRoute)
 	// .route("/isb", isbRoute)
 	.route("/disruptions", disruptionsRoute)
 	.route("/simulate", simulateRoute);
+
+app.use(logger());
 
 startTrainAlertsPoller();
 

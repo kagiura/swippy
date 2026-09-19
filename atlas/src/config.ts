@@ -14,6 +14,15 @@ export const config = {
 	routingApiUrl: process.env.ROUTING_API_URL,
 	onemapApiToken: process.env.ONEMAP_API_TOKEN,
 
+	// Comma-separated list of allowed frontend origins - set this via env vars
+	// per-environment (e.g. Cloud Run) rather than hardcoding a deployed URL.
+	corsAllowedOrigins: (
+		process.env.CORS_ALLOWED_ORIGINS ?? "http://localhost:3000"
+	)
+		.split(",")
+		.map((origin) => origin.trim())
+		.filter(Boolean),
+
 	lta: {
 		accountKey: process.env.LTA_DATAMALL_API,
 		busArrivalUrl:

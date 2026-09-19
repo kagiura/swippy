@@ -2,9 +2,9 @@ import {
 	array,
 	boolean,
 	date,
-	InferOutput,
-	number,
+	type InferOutput,
 	nullable,
+	number,
 	object,
 	optional,
 	picklist,
@@ -214,6 +214,12 @@ export const RoutingPlaceSchema = object({
 	name: string(),
 });
 
+export const RoutingDisruptionSchema = object({
+	effect: picklist(["no-service", "reduced-service", "delay", "bridging-bus"]),
+	description: string(),
+	bridgingBusStops: optional(array(string())),
+});
+
 export const RoutingLegSchema = object({
 	startTime: number(),
 	distance: number(),
@@ -225,6 +231,7 @@ export const RoutingLegSchema = object({
 	routeShortName: optional(nullable(string())),
 	routeLongName: optional(nullable(string())),
 	duration: number(),
+	disruption: optional(RoutingDisruptionSchema),
 });
 
 export const RoutingItinerarySchema = object({
@@ -243,10 +250,19 @@ export const RoutingPlanSchema = object({
 	itineraries: array(RoutingItinerarySchema),
 });
 
+export const RoutingProfileSchema = picklist([
+	"balanced",
+	"fastest",
+	"fewer-transfers",
+]);
+
 export const RoutingResponseSchema = object({
 	plan: RoutingPlanSchema,
+	rerankApplied: optional(boolean()),
+	profile: optional(RoutingProfileSchema),
 });
 
 export type RoutingResponse = InferOutput<typeof RoutingResponseSchema>;
 export type RoutingItinerary = InferOutput<typeof RoutingItinerarySchema>;
 export type RoutingLeg = InferOutput<typeof RoutingLegSchema>;
+export type RoutingProfile = InferOutput<typeof RoutingProfileSchema>;
