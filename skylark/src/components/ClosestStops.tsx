@@ -1,17 +1,14 @@
 import { Badge, Box, Heading, Inset, Text } from "@radix-ui/themes";
+import { motion } from "motion/react";
 import { Accordion } from "radix-ui";
 import { useEffect } from "react";
 import { useLocalStorage } from "usehooks-ts";
-
-import styles from "./ClosestStops.module.css";
-
-import StopTimings from "./StopTimings";
-
-import { PublicBusStop } from "@/types/publicBus";
+import type { PublicBusStop } from "@/types/publicBus";
 import formatDistance from "@/utils/formatDistance";
 import getClosestStops from "@/utils/getClosestStops";
 import useLocation from "@/utils/useLocation";
-import { motion } from "motion/react";
+import styles from "./ClosestStops.module.css";
+import StopTimings from "./StopTimings";
 
 export default function ClosestStops() {
 	const {
@@ -21,8 +18,7 @@ export default function ClosestStops() {
 		isLocationActive,
 		isLocationStale,
 		withinNusBounds,
-	} =
-		useLocation();
+	} = useLocation();
 	const [closestStops, setClosestStops] = useLocalStorage<
 		(PublicBusStop & { distance: number })[]
 	>("closest", []);
@@ -40,22 +36,22 @@ export default function ClosestStops() {
 			</ClosestStopsTitleWrapper>
 		);
 	}
-	if (!withinNusBounds) {
-		return (
-			<ClosestStopsTitleWrapper>
-				<Text>
-					Your location is outside the NUS campus. Search for a public bus stop with
-					the search bar above.
-				</Text>
-			</ClosestStopsTitleWrapper>
-		);
-	}
+	// if (!withinNusBounds) {
+	// 	return (
+	// 		<ClosestStopsTitleWrapper>
+	// 			<Text>
+	// 				Your location is outside the NUS campus. Search for a public bus stop with
+	// 				the search bar above.
+	// 			</Text>
+	// 		</ClosestStopsTitleWrapper>
+	// 	);
+	// }
 
 	return (
 		<ClosestStopsTitleWrapper>
 			{isLocationStale && (
 				<Badge color="orange" size="1" mb="2">
-					Using outdated location
+					Location pending update...
 				</Badge>
 			)}
 			<Accordion.Root
@@ -85,7 +81,7 @@ export default function ClosestStops() {
 								</Accordion.Trigger>
 								<Accordion.Content asChild>
 									<Box pb="1">
-												<StopTimings busStopCode={stop.code} />
+										<StopTimings busStopCode={stop.code} />
 									</Box>
 								</Accordion.Content>
 							</Box>
