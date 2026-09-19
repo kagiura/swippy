@@ -518,7 +518,7 @@ function NavigateContent() {
 				/>
 				{locationFailed && !form.start && (
 					<Text color="gray" size="2" role="alert">
-						We couldn't get your current location, so we need you to fill it in
+						We couldn&apos;t get your current location, so we need you to fill it in
 						here.
 					</Text>
 				)}
