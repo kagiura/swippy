@@ -1,14 +1,19 @@
 "use client";
 import {
-	Box,
 	Flex,
 	IconButton,
 	Inset,
 	Text,
 	TextField,
 } from "@radix-ui/themes";
-import { IconCross, IconSearch, IconX } from "@tabler/icons-react";
+import {
+	IconCross,
+	IconSearch,
+	IconUserCircle,
+	IconX,
+} from "@tabler/icons-react";
 import { AnimatePresence, LayoutGroup, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import ClosestStops from "@/components/ClosestStops";
 import DisruptionBanner from "@/components/DisruptionBanner";
@@ -20,7 +25,7 @@ export default function Page() {
 
 	return (
 		<>
-			<Box mb="5">
+			<Flex gap="2" mb="5" align="center">
 				<TextField.Root
 					placeholder="Search NUS"
 					value={searchQuery}
@@ -35,6 +40,7 @@ export default function Page() {
 					color="gray"
 					variant="soft"
 					radius="large"
+					style={{ flex: 1 }}
 				>
 					<TextField.Slot side="left">
 						<Text color="gray">
@@ -57,7 +63,12 @@ export default function Page() {
 						)}
 					</TextField.Slot>
 				</TextField.Root>
-			</Box>
+				<IconButton asChild color="gray" variant="soft" radius="large">
+					<Link href="/profile" aria-label="Profile">
+						<IconUserCircle width={18} height={18} />
+					</Link>
+				</IconButton>
+			</Flex>
 
 			<DisruptionBanner />
 

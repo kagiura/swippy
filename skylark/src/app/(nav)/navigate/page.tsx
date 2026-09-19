@@ -26,6 +26,7 @@ import type {
 	RoutingProfile,
 } from "@/types/schema";
 import { getTransitRoute, type RoutingQuery } from "@/utils/api";
+import { getDefaultDate, getDefaultTime } from "@/utils/dateFormat";
 import type { GeocoderResult } from "@/utils/geocoderApi";
 import {
 	type FocusedSegment,
@@ -44,20 +45,6 @@ const DEFAULT_START = "1.3081592,103.8551479";
 const DEFAULT_END = "1.2739864,103.8012642";
 const DEFAULT_START_LABEL = "Default origin";
 const DEFAULT_END_LABEL = "Default destination";
-
-function getDefaultDate() {
-	const now = new Date();
-	return `${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-		now.getDate(),
-	).padStart(2, "0")}-${now.getFullYear()}`;
-}
-
-function getDefaultTime() {
-	const now = new Date();
-	return `${String(now.getHours()).padStart(2, "0")}:${String(
-		now.getMinutes(),
-	).padStart(2, "0")}:00`;
-}
 
 function parseCoordinates(value: string) {
 	const parts = value.split(",").map((part) => Number(part.trim()));
