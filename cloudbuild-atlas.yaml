@@ -1,9 +1,9 @@
 substitutions:
   _REGION: us-central1
   _REPOSITORY: skylark
-  _SERVICE: skylark
-  _IMAGE: skylark
-  _ATLAS_URL: http://localhost:8787
+  _SERVICE: atlas
+  _IMAGE: atlas
+  _CORS_ALLOWED_ORIGINS: https://YOUR_SKYLARK_CLOUD_RUN_URL
 
 options:
   logging: CLOUD_LOGGING_ONLY
@@ -13,12 +13,10 @@ steps:
     args:
       - build
       - -f
-      - skylark/Dockerfile
+      - atlas/Dockerfile
       - -t
       - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID
-      - --build-arg
-      - NEXT_PUBLIC_ATLAS_URL=${_ATLAS_URL}
-      - skylark
+      - atlas
 
   - name: gcr.io/cloud-builders/docker
     args:
@@ -35,8 +33,8 @@ steps:
       - --region=${_REGION}
       - --platform=managed
       - --allow-unauthenticated
-      - --set-env-vars=LTA_BUS_ARRIVAL_URL=https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival,ROUTING_API_URL=https://www.onemap.gov.sg/api/public/routingsvc/route,GEOCODER_API_URL=https://www.onemap.gov.sg/api/common/elastic/search
-      - --set-secrets=DATAMALL_API_KEY=DATAMALL_API_KEY:latest,ONEMAP_API_TOKEN=ONEMAP_API_TOKEN:latest
+      - --set-env-vars=LTA_BUS_ARRIVAL_URL=https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival,LTA_TRAIN_ALERT_URL=https://datamall2.mytransport.sg/ltaodataservice/GTFSRealTimeTrainServiceAlerts,ROUTING_API_URL=https://www.onemap.gov.sg/api/public/routingsvc/route,CORS_ALLOWED_ORIGINS=${_CORS_ALLOWED_ORIGINS}
+      - --set-secrets=LTA_DATAMALL_API=DATAMALL_API_KEY:latest,ONEMAP_API_TOKEN=ONEMAP_API_TOKEN:latest
 
 images:
   - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$BUILD_ID
