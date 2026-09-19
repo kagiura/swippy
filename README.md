@@ -1,14 +1,15 @@
-# Zephyrus
+# Introduction
+Swippy by Handbrewed is a public transport navigation app that sets itself apart with the ability to monitor current disruptions around the country. Whilst other apps merely provide routes from one place to another, Swippy has the ability to track these disruptions and choose the most appropriate route for the commuter to use for that point in time. 
 
-![banner](./docs/assets/banner-zephyrus.png)
+# Architecture
+Swippy was built with OpenStreetMap as a base layer via MapLibre, allowing for a vector-based map visualisation that ensures better resolution and a more responsive experience than its rasterised counterpart, and for greater customisability with official fonts, colours, and iconography promoting a more cohesive user experience.
 
-Project Zephyrus is a wayfinding project aimed at creating an interactive campus map for NUS, that includes both road-level navigation and indoors navigation.
+The project is derived from Kyuu’s previous project, [Zephyrus](https://github.com/kagiura/zephyrus) which serves as a bus routing application for NUS internal shuttle buses. The code is organised into a frontend (named Atlas) and a backend component (named Skylark), and is hosted on Google Cloud. We incorporate bus line geometries from [busrouter.sg] (https://busrouter.sg), train line geometries from [OpenStreetMap] (https://wiki.openstreetmap.org/wiki/Singapore/Rail_Transport), OneMap’s geocoder and routing engines, and LTA Datamall’s real-time bus arrival API in the navigation and stop functionalities within the webpage.
 
-The project consists of two web applications:
+# Uniqueness
+Swippy is a one-stop information hub for public transport information in Singapore, detailing both travel time and fare information. Total journey times take into account both the time taken in public transport between the origin and destination stations, and time spent walking, waiting for transit, and transferring. Furthermore, users can customise their journeys according to their respective needs, such as wheelchair-friendly options (for personas like Mdm Lim), or fast walkers to minimise journey times.  
 
-- [Skylark](./skylark/README.md), a user-facing interactive map progressive web app (PWA).
-- [Dazzlegarden (dzg)](./dazzlegarden/README.md), an admin panel for editing and creating IMDF-standard indoor mapping files.
+Only if one’s commute passes through a disrupted sector, our app will display a prominent alert at the top of the screen, giving it the greatest visual priority within the interface. Furthermore, the alert will contain a button that would instantly reroute the commuter around the affected sector, reducing the burden of navigating from the commuter. This makes it suitable for personas like Rachel, where disruption alerts only show up if her commuter passes through the affected sectors. She is also able to minimise the amount of time needed to reroute as the app will compute alternative journeys for her, which increases her odds of reaching work on time should a disruption arise. 
 
-## Acknowledgements
-
-This project is supported by the [Centre for Computing for Social Good & Philanthropy Fellowship Programme](https://www.ccsgp.comp.nus.edu.sg/fellowship-programme).
+# Assumptions & Limitations
+It is assumed that the user is fluent in English and not physically or visually handicapped, and has a mobile device with cellular or Wi-Fi connection. Other in-app languages like Mandarin, Malay, and Tamil are in the pipeline and have not been implemented within the limited time allocated. Neither are station crowdedness, travel time by bike, or weather and traffic conditions.
