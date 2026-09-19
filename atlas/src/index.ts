@@ -8,16 +8,19 @@ import { isbRoute } from "./routes/isb";
 import { routingRoute } from "./routes/routing";
 import { simulateRoute } from "./routes/simulate";
 
-const app = new Hono();
-
-app.get("/health", (c) => c.json(getHealth()));
-app.route("/routing", routingRoute);
-app.route("/bus-arrival", busArrivalRoute);
-// app.route("/isb", isbRoute);
-app.route("/disruptions", disruptionsRoute);
-app.route("/simulate", simulateRoute);
+const app = new Hono()
+	.get("/health", (c) => c.json(getHealth()))
+	.route("/routing", routingRoute)
+	.route("/bus-arrival", busArrivalRoute)
+	// .route("/isb", isbRoute)
+	.route("/disruptions", disruptionsRoute)
+	.route("/simulate", simulateRoute);
 
 startTrainAlertsPoller();
+
+// Chained so the combined route types are inferred - required for the
+// hono/client RPC type inference to see every route, not just /health.
+export type AppType = typeof app;
 
 export default {
 	port: config.port,
