@@ -3,6 +3,7 @@ import { Layer, Source } from "react-map-gl/maplibre";
 import { mrtHighFi, mrtLines, mrtLowFi } from "@/data/mrt/mrtLines";
 import mrtStations from "@/data/mrt/mrtStations";
 import { railStations } from "@/data/railStations";
+import { useMapState } from "@/utils/mapState";
 
 const LOW_HI_ZOOM = 14;
 
@@ -21,6 +22,7 @@ const mrtStationsGeojson = {
 
 function MRTLayer() {
 	const { resolvedTheme: theme } = useTheme();
+	const { focusedSegments } = useMapState();
 
 	const backgroundColor = theme === "dark" ? "#000000" : "#ffffff";
 	// console.log("STATION", mrtLowFi, mrtHighFi);
