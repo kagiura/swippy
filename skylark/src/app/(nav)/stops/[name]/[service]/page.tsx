@@ -35,7 +35,10 @@ export default function ServiceDetails() {
 	const busStopCode = typeof name === "string" ? name : undefined;
 	const serviceNo = typeof serviceParam === "string" ? serviceParam : undefined;
 	const stop = busStopCode ? getPublicBusStop(busStopCode) : undefined;
-	const service = serviceNo ? getPublicBusService(serviceNo) : undefined;
+	const service = useMemo(
+		() => (serviceNo ? getPublicBusService(serviceNo) : undefined),
+		[serviceNo],
+	);
 	const [selectedDirection, setSelectedDirection] = useState(0);
 	const [showAllStops, setShowAllStops] = useState(false);
 	const { services, error, isLoading } = usePublicBusArrivals(
