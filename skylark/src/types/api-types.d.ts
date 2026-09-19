@@ -4,6 +4,8 @@ import * as hono_types from 'hono/types';
 import * as hono_utils_types from 'hono/utils/types';
 import * as hono_utils_http_status from 'hono/utils/http-status';
 
+type CrowdLevel = "low" | "medium" | "high";
+
 type LineCode = "NSL" | "EWL" | "CGL" | "NEL" | "CCL" | "DTL" | "TEL" | "BPLRT" | "SKLRT" | "PGLRT";
 type DisruptionEffect = "no-service" | "reduced-service" | "delay" | "bridging-bus";
 interface DisruptionAlert {
@@ -106,7 +108,37 @@ declare const app: hono_hono_base.HonoBase<{}, {
             status: hono_utils_http_status.ContentfulStatusCode;
         };
     };
-}, "/disruptions"> | hono_types.MergeSchemaPath<hono_types.BlankSchema, "/simulate">, "/", "/health">;
+}, "/disruptions"> | hono_types.MergeSchemaPath<hono_types.BlankSchema, "/simulate"> | hono_types.MergeSchemaPath<{
+    "/": {
+        $get: {
+            input: {};
+            output: {
+                error: string;
+            };
+            outputFormat: "json";
+            status: 400;
+        } | {
+            input: {};
+            output: {
+                crowd: {
+                    station: string;
+                    level: CrowdLevel;
+                    startTime?: string | undefined;
+                    endTime?: string | undefined;
+                }[];
+            };
+            outputFormat: "json";
+            status: hono_utils_http_status.ContentfulStatusCode;
+        } | {
+            input: {};
+            output: {
+                error: string;
+            };
+            outputFormat: "json";
+            status: 502;
+        };
+    };
+}, "/station-crowd">, "/", "/health">;
 type AppType = typeof app;
 declare const _default: {
     port: number;

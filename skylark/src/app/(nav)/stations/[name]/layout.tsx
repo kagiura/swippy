@@ -1,6 +1,8 @@
 "use client";
 
-import { Flex, Heading, Text } from "@radix-ui/themes";
+import { Button, Flex, Heading, Text } from "@radix-ui/themes";
+import { IconArrowLeft } from "@tabler/icons-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useMemo } from "react";
 import { mrtLines } from "@/data/mrt/mrtLines";
@@ -54,6 +56,12 @@ export default function Story({ children }: { children: React.ReactNode }) {
 
 	return (
 		<>
+			<Button asChild variant="ghost" size="2" mb="2">
+				<Link href="/">
+					<IconArrowLeft size={16} />
+					Back
+				</Link>
+			</Button>
 			<Heading
 				as="h1"
 				size={{ initial: "7", sm: "8" }}

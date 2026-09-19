@@ -21,7 +21,7 @@ export default function ClosestStops() {
 	} = useLocation();
 	const [closestStops, setClosestStops] = useLocalStorage<
 		(PublicBusStop & { distance: number })[]
-	>("closest", []);
+	>("closest", [], { initializeWithValue: false });
 
 	// if user's location became available,zoom to user location
 	useEffect(() => {
@@ -36,16 +36,6 @@ export default function ClosestStops() {
 			</ClosestStopsTitleWrapper>
 		);
 	}
-	// if (!withinNusBounds) {
-	// 	return (
-	// 		<ClosestStopsTitleWrapper>
-	// 			<Text>
-	// 				Your location is outside the NUS campus. Search for a public bus stop with
-	// 				the search bar above.
-	// 			</Text>
-	// 		</ClosestStopsTitleWrapper>
-	// 	);
-	// }
 
 	return (
 		<ClosestStopsTitleWrapper>
