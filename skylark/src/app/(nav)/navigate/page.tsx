@@ -1,4 +1,5 @@
 /** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
+/** biome-ignore-all lint/a11y/useAltText: <explanation> */
 /** biome-ignore-all lint/suspicious/noArrayIndexKey: <explanation> */
 "use client";
 
@@ -12,10 +13,19 @@ import {
 	Text,
 	TextField,
 } from "@radix-ui/themes";
-import { IconWalk } from "@tabler/icons-react";
+import { IconArrowRight, IconWalk } from "@tabler/icons-react";
+import clsx from "clsx";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Suspense, useCallback, useEffect, useMemo, useState } from "react";
+import {
+	Fragment,
+	Suspense,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import MRTCaplet from "@/components/MRTCaplet";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 import mrtStations from "@/data/mrt/mrtStations";
 import {
@@ -195,6 +205,7 @@ function Itinerary({
 						<Flex justify="between" align="start" gap="3">
 							<div>
 								<Heading as="h2" size="4">
+									{itinerary.legs.some((leg) => leg.disruption) && "⚠️ "}
 									{formatTime(itinerary.startTime)} -{" "}
 									{formatTime(itinerary.endTime)}
 								</Heading>
@@ -203,26 +214,45 @@ function Itinerary({
 									transfers · ${itinerary.fare}
 								</Text>
 							</div>
-							<Text color="gray" size="2">
+							{/* <Text color="gray" size="2">
 								{Math.round(itinerary.walkDistance)}m walk
-							</Text>
+							</Text> */}
 						</Flex>
-						<Flex wrap="wrap">
+						<Flex wrap="wrap" mt="1">
 							{/* brief overview of the itinerary */}
 							{/* skip any walks less than 170m */}
 							{itinerary.legs
 								.filter((leg) => leg.mode !== "WALK" || leg.distance >= 170)
 								.map((leg, index) => (
-									<div key={leg.startTime}>
-										<Text size="2">
+									<Fragment key={leg.startTime}>
+										{/* <Text size="2">
 											{index > 0 && " > "}
 											{leg.mode === "WALK" ? (
 												<IconWalk width="1em" height="1em" />
 											) : (
 												legLabel(leg)
 											)}
-										</Text>
-									</div>
+										</Text> */}
+										{index > 0 &&
+											(leg.mode !== "WALK" || leg.distance >= 170) && (
+												<IconArrowRight width="1em" height="1em" />
+											)}
+										{leg.mode === "WALK" && (
+											<IconWalk width="1em" height="1em" />
+										)}
+										{leg.mode === "BUS" && (
+											<span className={styles.busTagSmall}>
+												{leg.routeId ?? "Bus"}
+											</span>
+										)}
+										{leg.mode === "SUBWAY" && (
+											<MRTCaplet
+												code={leg.routeId ?? ""}
+												width="30px"
+												height="16px"
+											/>
+										)}
+									</Fragment>
 								))}
 						</Flex>
 					</div>
@@ -231,20 +261,61 @@ function Itinerary({
 
 			{isSelected && (
 				<div className={styles.legs}>
-					{itinerary.legs.map((leg, index) => (
-						<div className={styles.leg} key={`${leg.startTime}-${index}`}>
-							<Text weight="bold" size="2">
-								{legLabel(leg)}
-							</Text>
-							<Text size="2">
-								{leg.from.name} to {leg.to.name}
-							</Text>
-							<Text color="gray" size="1">
-								{formatDuration(leg.duration)} · {Math.round(leg.distance)}m
-								{leg.agencyName ? ` · ${leg.agencyName}` : ""}
-							</Text>
-						</div>
-					))}
+					{itinerary.legs
+						.filter(
+							(leg, i) => leg.mode !== "WALK" || leg.distance >= 170 || i === 0,
+						)
+						.map((leg, index) => (
+							<Flex
+								className={clsx(
+									styles.leg,
+									leg.disruption && styles.disruption,
+								)}
+								key={`${leg.startTime}-${index}`}
+							>
+								<div>
+									{leg.mode === "WALK" ? (
+										<img
+											src="https://jooferj.github.io/media/icons/walk.svg"
+											width="36px"
+											height="28px"
+											style={{
+												objectFit: "contain",
+											}}
+										/>
+									) : leg.mode === "SUBWAY" ? (
+										<MRTCaplet
+											code={leg.routeId ?? ""}
+											width="36px"
+											height="28px"
+										/>
+									) : leg.mode === "BUS" ? (
+										<div className={styles.busTag}>{leg.routeId ?? ""}</div>
+									) : null}
+								</div>
+								<div
+									style={{
+										flex: "1 0 0",
+										display: "flex",
+										flexDirection: "column",
+									}}
+								>
+									<Text size="2">
+										{leg.from.name} to {leg.to.name}
+									</Text>
+									<Text color="gray" size="1">
+										{formatDuration(leg.duration)}
+										{
+											// stop count if its bus or rail
+											(leg.mode === "BUS" || leg.mode === "RAIL") &&
+											leg?.intermediateStops
+												? ` · ${leg?.intermediateStops.length + 1} stops`
+												: ""
+										}
+									</Text>
+								</div>
+							</Flex>
+						))}
 				</div>
 			)}
 		</article>
@@ -381,6 +452,9 @@ function NavigateContent() {
 		getTransitRoute(form)
 			.then((result) => {
 				if (!cancelled) setRoute(result);
+				// automatically set itinerary to the first route if available
+				if (result.plan.itineraries.length > 0 && !cancelled)
+					setSelectedItinerary(result.plan.itineraries[0]);
 			})
 			.catch((requestError: Error) => {
 				if (!cancelled) setError(requestError.message);
