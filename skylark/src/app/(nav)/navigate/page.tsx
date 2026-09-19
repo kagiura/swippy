@@ -15,6 +15,7 @@ import { IconWalk } from "@tabler/icons-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
+import mrtStations from "@/data/mrt/mrtStations";
 import {
 	getPublicBusService,
 	PUBLIC_BUS_SERVICE_COLOR,
@@ -106,6 +107,7 @@ function Itinerary({
 		setFocusedStopName,
 		setFocusedSegments,
 		setFocusedStops,
+		focusedSegments,
 	} = useMapState();
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: <explanation>
@@ -155,13 +157,38 @@ function Itinerary({
 				{ name: leg.from?.name || "", status: "upcoming" },
 				{ name: leg.to?.name || "", status: "upcoming" },
 			);
-			focusedSegments.push({
-				from: leg.from?.stopCode || "",
-				to: leg.to?.stopCode || "",
-				type: leg.mode === "subway" ? "mrt" : "bus",
-				status: "upcoming",
-				service: leg.routeId || "",
-			});
+			// for bus stops, use leg.from/to.stopCode
+			if (leg.mode === "BUS") {
+				focusedSegments.push({
+					from: leg.from?.stopCode || "",
+					to: leg.to?.stopCode || "",
+					type: "bus",
+					status: "upcoming",
+					service: leg.routeId || "",
+				});
+			}
+
+			if (leg.mode === "SUBWAY") {
+				// we have to push each individual consecutive station along the whole route. we can utilize the intermediateStops array
+				const orderOfStops = [
+					leg.from?.stopCode || "",
+					...(leg.intermediateStops?.map((stop) => stop.stopCode) || []),
+					leg.to?.stopCode || "",
+				].filter((s) => typeof s === "string");
+				const stopNames = orderOfStops.map((stopCode) => {
+					const stop = mrtStations.find((s) => s.code.includes(stopCode));
+					return stop?.name.en || "";
+				});
+				for (let i = 0; i < stopNames.length - 1; i++) {
+					focusedSegments.push({
+						from: stopNames[i],
+						to: stopNames[i + 1],
+						type: "mrt",
+						status: "upcoming",
+						service: leg.routeId || "",
+					});
+				}
+			}
 		});
 
 		setFocusedStops(focusedStops);

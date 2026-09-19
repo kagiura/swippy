@@ -4,6 +4,7 @@ import lineSlice from "@turf/line-slice";
 import busRoutesRaw from "@/data/busrouter/v1/routes.min.json";
 import busServicesRaw from "@/data/busrouter/v1/services.min.json";
 import busStopsRaw from "@/data/busrouter/v1/stops.min.json";
+import { mrtHighFi } from "@/data/mrt/mrtLines";
 import type { FocusedSegment } from "./mapState";
 
 const busRoutes = busServicesRaw;
@@ -41,4 +42,19 @@ export function getSegmentPolyline(segment: FocusedSegment) {
 	const sliced = lineSlice(start, end, line); // Feature<LineString>
 	console.log("SLICED", sliced);
 	return sliced;
+}
+
+// MRT track segments are precomputed in mrtLines.ts, so just pick the
+// matching one out instead of recalculating any geometry.
+export function getMrtSegmentFeature(segment: FocusedSegment) {
+	const { from, to, service } = segment;
+
+	return (
+		mrtHighFi.segments.features.find(
+			(feature) =>
+				feature.properties.line.startsWith(service) &&
+				((feature.properties.from === from && feature.properties.to === to) ||
+					(feature.properties.from === to && feature.properties.to === from)),
+		) ?? null
+	);
 }
