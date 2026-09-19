@@ -3,6 +3,7 @@ import {
 	Flex,
 	IconButton,
 	Inset,
+	Spinner,
 	Text,
 	TextField,
 } from "@radix-ui/themes";
@@ -17,23 +18,26 @@ import Link from "next/link";
 import { useState } from "react";
 import ClosestStops from "@/components/ClosestStops";
 import DisruptionBanner from "@/components/DisruptionBanner";
+import GeosearchResults from "@/components/GeosearchResults";
 import { getLiveDisruptions } from "@/utils/api";
+import { usePlaceSearch } from "@/utils/usePlaceSearch";
 
 export default function Page() {
-	const [searchQuery, setSearchQuery] = useState("");
 	const [isSearching, setIsSearching] = useState(false);
+
+	const { query, setQuery, results, loading } = usePlaceSearch();
 
 	return (
 		<>
 			<Flex gap="2" mb="5" align="center">
 				<TextField.Root
-					placeholder="Search NUS"
-					value={searchQuery}
-					onChange={(e) => setSearchQuery(e.target.value)}
+					placeholder="Search"
+					value={query}
+					onChange={(e) => setQuery(e.target.value)}
 					onFocus={() => setIsSearching(true)}
 					onBlur={() => {
 						// searching false if query is empty
-						if (searchQuery.trim() === "") {
+						if (query.trim() === "") {
 							setIsSearching(false);
 						}
 					}}
@@ -48,13 +52,13 @@ export default function Page() {
 						</Text>
 					</TextField.Slot>
 					<TextField.Slot side="right">
-						{!!searchQuery && (
+						{!!query && (
 							<IconButton
 								color="gray"
 								variant="ghost"
 								size="1"
 								onClick={() => {
-									setSearchQuery("");
+									setQuery("");
 									setIsSearching(false);
 								}}
 							>
@@ -70,8 +74,6 @@ export default function Page() {
 				</IconButton>
 			</Flex>
 
-			<DisruptionBanner />
-
 			<AnimatePresence>
 				{isSearching ? (
 					<motion.div
@@ -81,7 +83,13 @@ export default function Page() {
 						exit={{ opacity: 0, x: 10, position: "absolute" }}
 						transition={{ damping: 120 }}
 					>
-						{/* <CampusSearchResults searchQuery={searchQuery} /> */}
+						{loading ? (
+							<Flex justify="center" align="center">
+								<Spinner />
+							</Flex>
+						) : (
+							<GeosearchResults places={results} />
+						)}
 					</motion.div>
 				) : (
 					<motion.div
@@ -91,6 +99,7 @@ export default function Page() {
 						exit={{ opacity: 0, x: -10, position: "absolute" }}
 						transition={{ damping: 120 }}
 					>
+						<DisruptionBanner />
 						<Flex direction="column" gap="0" mt="4">
 							<LayoutGroup>
 								<ClosestStops />

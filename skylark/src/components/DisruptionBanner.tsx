@@ -1,11 +1,12 @@
 "use client";
-import { Box, Flex, Text } from "@radix-ui/themes";
+import { Box, Button, Flex, Text } from "@radix-ui/themes";
 import {
 	IconAlertCircleFilled,
 	IconAlertTriangle,
 	IconChevronDown,
 } from "@tabler/icons-react";
 import { AnimatePresence, motion } from "motion/react";
+import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 import { getLiveDisruptions, getTransitRoute } from "@/utils/api";
@@ -19,15 +20,19 @@ const PANEL_ID = "disruption-details";
 
 function CommuteAlert() {
 	const { home, work } = useSavedPlaces();
+	// Morning commute (home -> work) is checked instead of the evening trip home,
+	// since evening travel is generally more flexible for most commuters.
+	const date = getDefaultDate();
+	const time = getDefaultTime();
 
 	const { data: commuteLegs } = useSWR(
 		home && work ? ["commute-route", home, work] : null,
 		() =>
 			getTransitRoute({
-				start: `${work?.latitude},${work?.longitude}`,
-				end: `${home?.latitude},${home?.longitude}`,
-				date: getDefaultDate(),
-				time: getDefaultTime(),
+				start: `${home?.latitude},${home?.longitude}`,
+				end: `${work?.latitude},${work?.longitude}`,
+				date,
+				time,
 				profile: "balanced",
 			}).then((route) => {
 				const best = route.plan.itineraries[0];
@@ -41,7 +46,17 @@ function CommuteAlert() {
 		},
 	);
 
-	if (!commuteLegs || commuteLegs.length === 0) return null;
+	if (!commuteLegs || commuteLegs.length === 0 || !home || !work) return null;
+
+	const alternativesParams = new URLSearchParams({
+		start: `${home.latitude},${home.longitude}`,
+		end: `${work.latitude},${work.longitude}`,
+		date,
+		time,
+		startName: home.label,
+		endName: work.label,
+		routeType: "pt",
+	});
 
 	return (
 		<Box
@@ -59,7 +74,7 @@ function CommuteAlert() {
 					<IconAlertCircleFilled width={16} height={16} />
 				</Text>
 				<Text as="span" size="2" weight="medium">
-					Your commute home may be disrupted
+					Your commute may be disrupted
 				</Text>
 			</Flex>
 			{commuteLegs.map((leg, index) => (
@@ -73,6 +88,9 @@ function CommuteAlert() {
 					{leg.disruption?.description}
 				</Text>
 			))}
+			<Button asChild size="2" variant="classic" color="red" mt="2">
+				<Link href={`/navigate?${alternativesParams}`}>See alternatives</Link>
+			</Button>
 		</Box>
 	);
 }
