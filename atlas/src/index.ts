@@ -13,7 +13,7 @@ const app = new Hono();
 app.get("/health", (c) => c.json(getHealth()));
 app.route("/routing", routingRoute);
 app.route("/bus-arrival", busArrivalRoute);
-app.route("/isb", isbRoute);
+// app.route("/isb", isbRoute);
 app.route("/disruptions", disruptionsRoute);
 app.route("/simulate", simulateRoute);
 

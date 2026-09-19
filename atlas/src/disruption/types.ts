@@ -1,4 +1,28 @@
-export type LineCode = "NSL" | "EWL" | "CGA" | "NEL" | "CCL" | "DTL" | "TEL";
+export type LineCode =
+	| "NSL"
+	| "EWL"
+	| "CGL"
+	| "NEL"
+	| "CCL"
+	| "DTL"
+	| "TEL"
+	| "BPLRT"
+	| "SKLRT"
+	| "PGLRT";
+
+// MRT only for now - LRT lines will be added once skylark supports them too.
+export const LINE_CODES: LineCode[] = [
+	"NSL",
+	"EWL",
+	"CGL",
+	"NEL",
+	"CCL",
+	"DTL",
+	"TEL",
+	"BPLRT",
+	"SKLRT",
+	"PGLRT",
+];
 
 export type DisruptionEffect =
 	| "no-service"
