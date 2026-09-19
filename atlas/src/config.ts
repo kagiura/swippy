@@ -11,8 +11,8 @@ const bool = (value: string | undefined, fallback: boolean) =>
 export const config = {
 	port: num(process.env.PORT, 8787),
 
-	routingApiUrl:
-		process.env.ROUTING_API_URL,
+	routingApiUrl: process.env.ROUTING_API_URL,
+	onemapApiToken: process.env.ONEMAP_API_TOKEN,
 
 	lta: {
 		accountKey: process.env.LTA_DATAMALL_API,
