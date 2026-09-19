@@ -43,7 +43,7 @@ export default function BusStops() {
 				}}
 				minzoom={14}
 			/>
-			<Layer
+			{/* <Layer
 				id="datamall-bus-stops-labels"
 				type="symbol"
 				minzoom={15}
@@ -59,7 +59,7 @@ export default function BusStops() {
 					"text-halo-color": theme === "dark" ? "#0f172a" : "#ffffff",
 					"text-halo-width": 1.5,
 				}}
-			/>
+			/> */}
 		</Source>
 	);
 }
