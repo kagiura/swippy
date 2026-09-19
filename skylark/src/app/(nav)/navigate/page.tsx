@@ -5,13 +5,19 @@ import {
 	Button,
 	Flex,
 	Heading,
+	Reset,
 	Select,
 	Text,
 	TextField,
 } from "@radix-ui/themes";
+import { IconWalk } from "@tabler/icons-react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useEffect, useMemo, useState } from "react";
 import PlaceAutocomplete from "@/components/PlaceAutocomplete";
+import {
+	getPublicBusService,
+	PUBLIC_BUS_SERVICE_COLOR,
+} from "@/data/publicBus";
 import type {
 	RoutingItinerary,
 	RoutingLeg,
@@ -19,6 +25,11 @@ import type {
 } from "@/types/schema";
 import { getTransitRoute, type RoutingQuery } from "@/utils/api";
 import type { GeocoderResult } from "@/utils/geocoderApi";
+import {
+	type FocusedSegment,
+	type FocusedStop,
+	useMapState,
+} from "@/utils/mapState";
 import styles from "./page.module.css";
 
 const PROFILE_OPTIONS: { value: RoutingProfile; label: string }[] = [
@@ -79,40 +90,145 @@ function legLabel(leg: RoutingLeg) {
 	return leg.routeShortName || leg.routeLongName || leg.route || leg.mode;
 }
 
-function Itinerary({ itinerary }: { itinerary: RoutingItinerary }) {
+function Itinerary({
+	itinerary,
+	selectedItinerary,
+	setSelectedItinerary,
+}: {
+	itinerary: RoutingItinerary;
+	selectedItinerary: RoutingItinerary | null;
+	setSelectedItinerary: (itinerary: RoutingItinerary | null) => void;
+}) {
+	const {
+		flyTo,
+		pullBackCard,
+		setFocusedStopName,
+		setFocusedSegments,
+		setFocusedStops,
+	} = useMapState();
+
+	useEffect(() => {
+		// set focused stops as all stops along the route, and focused segments as segments along the whole route
+		if (selectedItinerary === null) {
+			setFocusedStops([]);
+			setFocusedSegments([]);
+			return;
+		} else if (selectedItinerary.id !== itinerary.id) {
+			return;
+		}
+
+		const focusedStops: FocusedStop[] = [];
+		const focusedSegments: FocusedSegment[] = [];
+
+		// const currentStop = busStopCode || "";
+		// const currentStopIndex = route.indexOf(currentStop);
+		// const focusedStops: FocusedStop[] = route.map((stop, i) => ({
+		// 	name: stop,
+		// 	status: i <= currentStopIndex ? "passed" : "upcoming",
+		// }));
+
+		// setFocusedStops(focusedStops);
+		// setFocusedSegments([
+		// 	{
+		// 		from: route[0],
+		// 		to: route[currentStopIndex],
+		// 		type: "bus",
+		// 		status: "passed",
+		// 		service: service.serviceNo,
+		// 	},
+		// 	{
+		// 		from: route[currentStopIndex],
+		// 		to: route[route.length - 1],
+		// 		type: "bus",
+		// 		status: "upcoming",
+		// 		service: service.serviceNo,
+		// 	},
+		// ]);
+
+		// cycle through each leg and populate focusedStops and focusedSegments
+		itinerary.legs.forEach((leg) => {
+			if (leg.mode === "WALK" && leg.distance < 170) return;
+			if (leg.mode === "WALK") return; //for now
+			focusedStops.push(
+				{ name: leg.from.name, status: "upcoming" },
+				{ name: leg.to.name, status: "upcoming" },
+			);
+			focusedSegments.push({
+				from: leg.from.stopCode,
+				to: leg.to.stopCode,
+				type: leg.mode === "subway" ? "mrt" : "bus",
+				status: "upcoming",
+				service: leg.routeId,
+			});
+		});
+
+		setFocusedStops(focusedStops);
+		setFocusedSegments(focusedSegments);
+	}, [setFocusedSegments, setFocusedStops, selectedItinerary]);
+	const isSelected = selectedItinerary?.id === itinerary.id;
 	return (
 		<article className={styles.itinerary}>
-			<Flex justify="between" align="start" gap="3">
-				<div>
-					<Heading as="h2" size="4">
-						{formatTime(itinerary.startTime)} - {formatTime(itinerary.endTime)}
-					</Heading>
-					<Text color="gray" size="2">
-						{formatDuration(itinerary.duration)} · {itinerary.transfers}{" "}
-						transfers · ${itinerary.fare}
-					</Text>
-				</div>
-				<Text color="gray" size="2">
-					{Math.round(itinerary.walkDistance)}m walk
-				</Text>
-			</Flex>
-
-			<div className={styles.legs}>
-				{itinerary.legs.map((leg, index) => (
-					<div className={styles.leg} key={`${leg.startTime}-${index}`}>
-						<Text weight="bold" size="2">
-							{legLabel(leg)}
-						</Text>
-						<Text size="2">
-							{leg.from.name} to {leg.to.name}
-						</Text>
-						<Text color="gray" size="1">
-							{formatDuration(leg.duration)} · {Math.round(leg.distance)}m
-							{leg.agencyName ? ` · ${leg.agencyName}` : ""}
-						</Text>
+			<Reset>
+				<button
+					type="button"
+					onClick={() => setSelectedItinerary(isSelected ? null : itinerary)}
+				>
+					<div>
+						<Flex justify="between" align="start" gap="3">
+							<div>
+								<Heading as="h2" size="4">
+									{formatTime(itinerary.startTime)} -{" "}
+									{formatTime(itinerary.endTime)}
+								</Heading>
+								<Text color="gray" size="2">
+									{formatDuration(itinerary.duration)} · {itinerary.transfers}{" "}
+									transfers · ${itinerary.fare}
+								</Text>
+							</div>
+							<Text color="gray" size="2">
+								{Math.round(itinerary.walkDistance)}m walk
+							</Text>
+						</Flex>
+						<Flex wrap="wrap">
+							{/* brief overview of the itinerary */}
+							{/* skip any walks less than 170m */}
+							{itinerary.legs
+								.filter((leg) => leg.mode !== "WALK" || leg.distance >= 170)
+								.map((leg, index) => (
+									<div key={leg.startTime}>
+										<Text size="2">
+											{index > 0 && " > "}
+											{leg.mode === "WALK" ? (
+												<IconWalk width="1em" height="1em" />
+											) : (
+												legLabel(leg)
+											)}
+										</Text>
+									</div>
+								))}
+						</Flex>
 					</div>
-				))}
-			</div>
+				</button>
+			</Reset>
+
+			{isSelected && (
+				<div className={styles.legs}>
+					{itinerary.legs.map((leg, index) => (
+						<div className={styles.leg} key={`${leg.startTime}-${index}`}>
+							<Text weight="bold" size="2">
+								{legLabel(leg)}
+							</Text>
+							<Text size="2">
+								{leg.from.name} to {leg.to.name}
+							</Text>
+							<Text color="gray" size="1">
+								{formatDuration(leg.duration)} · {Math.round(leg.distance)}m
+								{leg.agencyName ? ` · ${leg.agencyName}` : ""}
+							</Text>
+						</div>
+					))}
+				</div>
+			)}
 		</article>
 	);
 }
@@ -137,6 +253,8 @@ function NavigateContent() {
 	> | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [loading, setLoading] = useState(false);
+	const [selectedItinerary, setSelectedItinerary] =
+		useState<RoutingItinerary | null>(null);
 
 	useEffect(() => {
 		const nextForm: RoutingQuery = {
@@ -340,8 +458,10 @@ function NavigateContent() {
 					</Heading>
 					{route.plan.itineraries.map((itinerary) => (
 						<Itinerary
-							key={`${itinerary.startTime}-${JSON.stringify(itinerary)}`}
+							key={`${itinerary.startTime}-${itinerary.id}`}
 							itinerary={itinerary}
+							selectedItinerary={selectedItinerary}
+							setSelectedItinerary={setSelectedItinerary}
 						/>
 					))}
 				</section>

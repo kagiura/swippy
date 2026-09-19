@@ -182,7 +182,7 @@ export const routingRoute = new Hono().get("/", async (c) => {
 	}));
 
 	return c.json({
-		plan: { ...succeeded[0].plan, itineraries: ranked },
+		plan: { ...succeeded[0].plan, itineraries: rankedWithId },
 		rerankApplied,
 		profile,
 		combosRequested: combos.length,
