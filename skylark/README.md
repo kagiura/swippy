@@ -1,4 +1,4 @@
-# skylark
+# Swippy
 
 ![banner](./docs/assets/banner-skylark.png)
 

@@ -41,8 +41,6 @@ const PROFILE_OPTIONS: { value: RoutingProfile; label: string }[] = [
 
 const DEFAULT_START = "1.3081592,103.8551479";
 const DEFAULT_END = "1.2739864,103.8012642";
-const DEFAULT_START_LABEL = "Default origin";
-const DEFAULT_END_LABEL = "Default destination";
 
 function getDefaultDate() {
 	const now = new Date();
@@ -247,8 +245,8 @@ function NavigateContent() {
 		profile: "balanced",
 	});
 	const [placeLabels, setPlaceLabels] = useState({
-		start: DEFAULT_START_LABEL,
-		end: DEFAULT_END_LABEL,
+		start: "",
+		end: "",
 	});
 	const [route, setRoute] = useState<Awaited<
 		ReturnType<typeof getTransitRoute>

@@ -10,8 +10,13 @@ import { isbRoute } from "./routes/isb";
 import { routingRoute } from "./routes/routing";
 import { simulateRoute } from "./routes/simulate";
 
+// "*" in CORS_ALLOWED_ORIGINS opts out of origin allow-listing entirely.
+const corsOrigin = config.corsAllowedOrigins.includes("*")
+	? "*"
+	: config.corsAllowedOrigins;
+
 const app = new Hono()
-	.use("*", cors({ origin: config.corsAllowedOrigins }))
+	.use("*", cors({ origin: corsOrigin }))
 	.get("/health", (c) => c.json(getHealth()))
 	.route("/routing", routingRoute)
 	.route("/bus-arrival", busArrivalRoute)
