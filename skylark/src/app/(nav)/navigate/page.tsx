@@ -1,3 +1,4 @@
+/** biome-ignore-all lint/a11y/noLabelWithoutControl: <explanation> */
 "use client";
 
 import {
@@ -263,9 +264,6 @@ function NavigateContent() {
 			<Heading as="h1" size="7" mb="1">
 				Navigate
 			</Heading>
-			<Text color="gray" size="2">
-				Plan a public transport route between two coordinates.
-			</Text>
 
 			<form
 				className={styles.form}
@@ -340,9 +338,9 @@ function NavigateContent() {
 					<Heading as="h2" size="5">
 						Routes
 					</Heading>
-					{route.plan.itineraries.map((itinerary, index) => (
+					{route.plan.itineraries.map((itinerary) => (
 						<Itinerary
-							key={`${itinerary.startTime}-${index}`}
+							key={`${itinerary.startTime}-${JSON.stringify(itinerary)}`}
 							itinerary={itinerary}
 						/>
 					))}

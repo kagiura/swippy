@@ -73,7 +73,7 @@ function disruptionPenalty(itinerary: Itinerary): number {
 
 function score(itinerary: Itinerary, profile: RankingProfile): number {
 	const weights = PROFILE_WEIGHTS[profile];
-	console.log("scoring in detail: ", {
+	const e = {
 		itinerary,
 		profile,
 		weights,
@@ -85,7 +85,8 @@ function score(itinerary: Itinerary, profile: RankingProfile): number {
 		scorept2: disruptionPenalty(itinerary) * weights.disruption,
 		scorept3: itineraryTransfers(itinerary) * weights.transfer,
 		scorept4: itineraryWalkSeconds(itinerary) * weights.walk,
-	});
+	};
+	console.log("scoring in detail: ", e);
 	return (
 		itineraryDurationSeconds(itinerary) * weights.duration +
 		disruptionPenalty(itinerary) * weights.disruption +

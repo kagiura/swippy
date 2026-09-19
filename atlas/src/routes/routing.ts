@@ -175,6 +175,12 @@ export const routingRoute = new Hono().get("/", async (c) => {
 		profile,
 	);
 
+	// generate random uuid for each itinerary
+	const rankedWithId = ranked.map((itinerary) => ({
+		...itinerary,
+		id: crypto.randomUUID(),
+	}));
+
 	return c.json({
 		plan: { ...succeeded[0].plan, itineraries: ranked },
 		rerankApplied,

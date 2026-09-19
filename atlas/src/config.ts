@@ -46,5 +46,5 @@ export const config = {
 	},
 
 	// Rerank can be fully disabled to fall back to plain duration-sorted itineraries.
-	enableRerank: bool(process.env.ENABLE_RERANK, false),
+	enableRerank: bool(process.env.ENABLE_RERANK, true),
 } as const;
