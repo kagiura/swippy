@@ -6,14 +6,18 @@ import { Suspense, useEffect, useMemo, useState } from "react";
 
 import styles from "./page.module.css";
 
+import PlaceAutocomplete from "@/components/PlaceAutocomplete";
 import {
 	getTransitRoute,
 	RoutingQuery,
 } from "@/utils/api";
+import { GeocoderResult } from "@/utils/geocoderApi";
 import { RoutingItinerary, RoutingLeg } from "@/types/schema";
 
 const DEFAULT_START = "1.3081592,103.8551479";
 const DEFAULT_END = "1.2739864,103.8012642";
+const DEFAULT_START_LABEL = "Default origin";
+const DEFAULT_END_LABEL = "Default destination";
 
 function getDefaultDate() {
 	const now = new Date();
@@ -110,6 +114,10 @@ function NavigateContent() {
 		date: getDefaultDate(),
 		time: getDefaultTime(),
 	});
+	const [placeLabels, setPlaceLabels] = useState({
+		start: DEFAULT_START_LABEL,
+		end: DEFAULT_END_LABEL,
+	});
 	const [route, setRoute] = useState<Awaited<ReturnType<typeof getTransitRoute>> | null>(
 		null,
 	);
@@ -124,6 +132,10 @@ function NavigateContent() {
 			time: searchParams.get("time") || getDefaultTime(),
 		};
 		setForm(nextForm);
+		setPlaceLabels({
+			start: searchParams.get("startName") || DEFAULT_START_LABEL,
+			end: searchParams.get("endName") || DEFAULT_END_LABEL,
+		});
 
 		const hasAllParams = ["start", "end", "date", "time"].every((key) =>
 			searchParams.has(key),
@@ -167,10 +179,29 @@ function NavigateContent() {
 		};
 	}, [form, searchParams, validationError]);
 
-	function updateField(field: keyof RoutingQuery, value: string) {
+	function selectPlace(field: "start" | "end", result: GeocoderResult) {
+		const nextForm = { ...form, [field]: `${result.latitude},${result.longitude}` };
+		const nextLabels = { ...placeLabels, [field]: result.name };
+		setForm(nextForm);
+		setPlaceLabels(nextLabels);
+		const params = new URLSearchParams({
+			...nextForm,
+			startName: nextLabels.start,
+			endName: nextLabels.end,
+			routeType: "pt",
+		});
+		router.replace(`/navigate?${params}`);
+	}
+
+	function updateField(field: "date" | "time", value: string) {
 		const nextForm = { ...form, [field]: value };
 		setForm(nextForm);
-		const params = new URLSearchParams({ ...nextForm, routeType: "pt" });
+		const params = new URLSearchParams({
+			...nextForm,
+			startName: placeLabels.start,
+			endName: placeLabels.end,
+			routeType: "pt",
+		});
 		router.replace(`/navigate?${params}`);
 	}
 
@@ -181,7 +212,17 @@ function NavigateContent() {
 			date: getDefaultDate(),
 			time: getDefaultTime(),
 		};
-		const params = new URLSearchParams({ ...nextForm, routeType: "pt" });
+		const nextLabels = {
+			start: DEFAULT_START_LABEL,
+			end: DEFAULT_END_LABEL,
+		};
+		setPlaceLabels(nextLabels);
+		const params = new URLSearchParams({
+			...nextForm,
+			startName: nextLabels.start,
+			endName: nextLabels.end,
+			routeType: "pt",
+		});
 		router.replace(`/navigate?${params}`);
 		setRoute(null);
 	}
@@ -196,14 +237,18 @@ function NavigateContent() {
 			</Text>
 
 			<form className={styles.form} onSubmit={(event) => event.preventDefault()}>
-				<label>
-					<Text size="2" weight="bold">Start</Text>
-					<TextField.Root value={form.start} onChange={(event) => updateField("start", event.target.value)} />
-				</label>
-				<label>
-					<Text size="2" weight="bold">End</Text>
-					<TextField.Root value={form.end} onChange={(event) => updateField("end", event.target.value)} />
-				</label>
+				<PlaceAutocomplete
+					label="Start"
+					value={form.start}
+					selectedLabel={placeLabels.start}
+					onSelect={(result) => selectPlace("start", result)}
+				/>
+				<PlaceAutocomplete
+					label="End"
+					value={form.end}
+					selectedLabel={placeLabels.end}
+					onSelect={(result) => selectPlace("end", result)}
+				/>
 				<div className={styles.row}>
 					<label>
 						<Text size="2" weight="bold">Date</Text>

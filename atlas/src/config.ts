@@ -12,7 +12,7 @@ export const config = {
 	port: num(process.env.PORT, 8787),
 
 	routingApiUrl:
-		process.env.ROUTING_API_URL ?? "https://onestoptransport.sg/api/routing",
+		process.env.ROUTING_API_URL,
 
 	lta: {
 		accountKey: process.env.LTA_DATAMALL_API,

@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 
-const ROUTING_API_URL = "https://onestoptransport.sg/api/routing";
-
 function formatTime(time: string) {
 	const [hours, minutes, seconds] = time.split(":").map(Number);
 	if (
@@ -25,8 +23,18 @@ function formatTime(time: string) {
 }
 
 export async function GET(request: Request) {
+	const apiUrl = process.env.ROUTING_API_URL;
+	const token = process.env.ONEMAP_API_TOKEN;
+	if (!apiUrl || !token) {
+		return NextResponse.json(
+			{ error: "ROUTING_API_URL and ONEMAP_API_TOKEN are not configured" },
+			{ status: 500 },
+		);
+	}
+
 	const url = new URL(request.url);
 	const routeType = url.searchParams.get("routeType") || "pt";
+	const mode = url.searchParams.get("mode") || "transit";
 	const start = url.searchParams.get("start");
 	const end = url.searchParams.get("end");
 	const date = url.searchParams.get("date");
@@ -45,20 +53,38 @@ export async function GET(request: Request) {
 			{ status: 400 },
 		);
 	}
-// https://onestoptransport.sg/api/routing?routeType=pt&start=1.3081592,103.8551479&end=1.2739864,103.8012642&date=09-18-2026&time=11:19:47
-	const upstreamUrl = new URL(ROUTING_API_URL);
+
+	if (!["transit", "bus", "rail"].includes(mode)) {
+		return NextResponse.json(
+			{ error: "mode must be transit, bus, or rail" },
+			{ status: 400 },
+		);
+	}
+	const upstreamUrl = new URL(apiUrl);
 	// start and end
 	upstreamUrl.searchParams.set("start", start);
 	upstreamUrl.searchParams.set("end", end);
 	// everything else
-	upstreamUrl.searchParams.set("routeType", "pt");
+	upstreamUrl.searchParams.set("routeType", routeType);
+	upstreamUrl.searchParams.set("mode", mode);
 	upstreamUrl.searchParams.set("date", date);
 	upstreamUrl.searchParams.set("time", formatTime(time));
 
 	try {
-		const response = await fetch(upstreamUrl);
-		const data = await response.json();
-		return NextResponse.json(data, { status: response.status });
+		const response = await fetch(upstreamUrl, {
+			headers: {
+				Authorization: token,
+				accept: "application/json",
+			},
+		});
+		const body = await response.text();
+		return new Response(body, {
+			status: response.status,
+			headers: {
+				"Content-Type":
+					response.headers.get("Content-Type") || "application/json",
+			},
+		});
 	} catch {
 		return NextResponse.json(
 			{ error: "Routing service is unavailable" },

@@ -43,6 +43,8 @@ export async function GET(request: Request) {
 	const { searchParams } = new URL(request.url);
 	const busStopCode = searchParams.get("BusStopCode");
 	const serviceNo = searchParams.get("ServiceNo");
+	const apiUrl = process.env.LTA_BUS_ARRIVAL_URL;
+	const accountKey = process.env.DATAMALL_API_KEY;
 
 	if (!busStopCode || !/^\d{5}$/.test(busStopCode)) {
 		return NextResponse.json(
@@ -51,12 +53,25 @@ export async function GET(request: Request) {
 		);
 	}
 
+	if (!apiUrl || !accountKey) {
+		return NextResponse.json(
+			{ error: "BUS_ARRIVAL_URL and DATAMALL_API_KEY are not configured" },
+			{ status: 500 },
+		);
+	}
+
 	const params = new URLSearchParams({ BusStopCode: busStopCode });
 	if (serviceNo) params.set("ServiceNo", serviceNo);
 
 	const response = await fetch(
-		`https://onestoptransport.sg/api/bus-arrival?${params.toString()}`,
-		{ next: { revalidate: 10 } },
+		`${apiUrl}?${params.toString()}`,
+		{
+			headers: {
+				AccountKey: accountKey,
+				accept: "application/json",
+			},
+			next: { revalidate: 10 },
+		},
 	);
 
 	if (!response.ok) {
