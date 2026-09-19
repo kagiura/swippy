@@ -48,7 +48,7 @@ export async function getTransitRoute({
 }
 
 export async function getLiveDisruptions(): Promise<DisruptionAlert[]> {
-	const response = await atlasClient.disruptions.$get();
+	const response = await atlasClient.disruptions.$get({ query: {} });
 	if (!response.ok) {
 		throw new Error(
 			`Live disruptions request failed with status ${response.status}`,
