@@ -34,6 +34,7 @@ export async function GET(request: Request) {
 
 	const url = new URL(request.url);
 	const routeType = url.searchParams.get("routeType") || "pt";
+	const mode = url.searchParams.get("mode") || "transit";
 	const start = url.searchParams.get("start");
 	const end = url.searchParams.get("end");
 	const date = url.searchParams.get("date");
@@ -52,12 +53,20 @@ export async function GET(request: Request) {
 			{ status: 400 },
 		);
 	}
+
+	if (!["transit", "bus", "rail"].includes(mode)) {
+		return NextResponse.json(
+			{ error: "mode must be transit, bus, or rail" },
+			{ status: 400 },
+		);
+	}
 	const upstreamUrl = new URL(apiUrl);
 	// start and end
 	upstreamUrl.searchParams.set("start", start);
 	upstreamUrl.searchParams.set("end", end);
 	// everything else
 	upstreamUrl.searchParams.set("routeType", routeType);
+	upstreamUrl.searchParams.set("mode", mode);
 	upstreamUrl.searchParams.set("date", date);
 	upstreamUrl.searchParams.set("time", formatTime(time));
 

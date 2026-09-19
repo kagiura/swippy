@@ -4,6 +4,7 @@ import {
 	date,
 	InferOutput,
 	number,
+	nullable,
 	object,
 	optional,
 	picklist,
@@ -209,86 +210,21 @@ export type ISBService = {
 	schedule: Schedule;
 };
 
-export const RoutingRequestParametersSchema = object({
-	mode: string(),
-	date: string(),
-	arriveBy: string(),
-	showIntermediateStops: string(),
-	fromPlace: string(),
-	transferPenalty: string(),
-	toPlace: string(),
-	time: string(),
-	maxTransfers: string(),
-	numItineraries: string(),
-});
-
 export const RoutingPlaceSchema = object({
 	name: string(),
-	lon: number(),
-	lat: number(),
-	vertexType: string(),
-	arrival: optional(number()),
-	departure: optional(number()),
-	stopId: optional(string()),
-	stopCode: optional(string()),
-	stopIndex: optional(number()),
-	stopSequence: optional(number()),
-});
-
-export const RoutingStepSchema = object({
-	distance: number(),
-	relativeDirection: string(),
-	streetName: string(),
-	absoluteDirection: string(),
-	stayOn: boolean(),
-	area: boolean(),
-	bogusName: boolean(),
-	lon: number(),
-	lat: number(),
-	elevation: string(),
-	walkingBike: boolean(),
-});
-
-export const RoutingLegGeometrySchema = object({
-	points: string(),
-	length: number(),
 });
 
 export const RoutingLegSchema = object({
 	startTime: number(),
-	endTime: number(),
-	departureDelay: number(),
-	arrivalDelay: number(),
-	realTime: boolean(),
 	distance: number(),
-	generalizedCost: number(),
-	pathway: boolean(),
 	mode: string(),
-	transitLeg: boolean(),
 	route: string(),
-	agencyTimeZoneOffset: number(),
-	interlineWithPreviousLeg: boolean(),
 	from: RoutingPlaceSchema,
 	to: RoutingPlaceSchema,
-	legGeometry: RoutingLegGeometrySchema,
-	steps: array(RoutingStepSchema),
-	intermediateStops: optional(array(RoutingPlaceSchema)),
-	agencyName: optional(string()),
-	agencyUrl: optional(string()),
-	routeType: optional(number()),
-	routeId: optional(string()),
-	tripId: optional(string()),
-	serviceDate: optional(string()),
-	routeShortName: optional(string()),
-	routeLongName: optional(string()),
-	rentedBike: optional(boolean()),
-	walkingBike: optional(boolean()),
+	agencyName: optional(nullable(string())),
+	routeShortName: optional(nullable(string())),
+	routeLongName: optional(nullable(string())),
 	duration: number(),
-});
-
-export const RoutingOptionsSchema = object({
-	mode: string(),
-	maxWalkDistance: string(),
 });
 
 export const RoutingItinerarySchema = object({
@@ -296,72 +232,19 @@ export const RoutingItinerarySchema = object({
 	startTime: number(),
 	endTime: number(),
 	walkTime: number(),
-	transitTime: number(),
-	waitingTime: number(),
 	walkDistance: number(),
-	walkLimitExceeded: boolean(),
-	generalizedCost: number(),
-	elevationLost: number(),
-	elevationGained: number(),
 	transfers: number(),
 	fare: string(),
 	legs: array(RoutingLegSchema),
-	tooSloped: boolean(),
-	arrivedAtDestinationWithRentedBicycle: boolean(),
-	routingOptions: RoutingOptionsSchema,
 });
 
 export const RoutingPlanSchema = object({
 	date: number(),
-	from: RoutingPlaceSchema,
-	to: RoutingPlaceSchema,
 	itineraries: array(RoutingItinerarySchema),
 });
 
-export const RoutingMetadataSchema = object({
-	searchWindowUsed: number(),
-	nextDateTime: number(),
-	prevDateTime: number(),
-});
-
-export const RoutingDebugOutputSchema = object({
-	precalculationTime: number(),
-	directStreetRouterTime: number(),
-	transitRouterTime: number(),
-	filteringTime: number(),
-	renderingTime: number(),
-	totalTime: number(),
-	transitRouterTimes: object({
-		tripPatternFilterTime: number(),
-		accessEgressTime: number(),
-		raptorSearchTime: number(),
-		itineraryCreationTime: number(),
-	}),
-});
-
-export const RoutingElevationMetadataSchema = object({
-	ellipsoidToGeoidDifference: number(),
-	geoidElevation: boolean(),
-});
-
-export const RoutingSummarySchema = object({
-	requestedCombinations: number(),
-	successfulCombinations: number(),
-	failedCombinations: number(),
-	candidateCount: number(),
-	deduplicatedCount: number(),
-	warnings: array(string()),
-});
-
 export const RoutingResponseSchema = object({
-	requestParameters: RoutingRequestParametersSchema,
 	plan: RoutingPlanSchema,
-	metadata: RoutingMetadataSchema,
-	previousPageCursor: string(),
-	nextPageCursor: string(),
-	debugOutput: RoutingDebugOutputSchema,
-	elevationMetadata: RoutingElevationMetadataSchema,
-	routing: RoutingSummarySchema,
 });
 
 export type RoutingResponse = InferOutput<typeof RoutingResponseSchema>;
