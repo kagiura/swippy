@@ -1,0 +1,36 @@
+substitutions:
+  _REGION: asia-southeast1
+  _REPOSITORY: skylark
+  _SERVICE: skylark
+  _IMAGE: skylark
+
+steps:
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -f
+      - skylark/Dockerfile
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
+      - skylark
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
+
+  - name: gcr.io/google.com/cloudsdktool/cloud-sdk
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --set-env-vars=LTA_BUS_ARRIVAL_URL=https://datamall2.mytransport.sg/ltaodataservice/v3/BusArrival,ROUTING_API_URL=https://www.onemap.gov.sg/api/public/routingsvc/route,GEOCODER_API_URL=https://www.onemap.gov.sg/api/common/elastic/search
+      - --set-secrets=DATAMALL_API_KEY=DATAMALL_API_KEY:latest,ONEMAP_API_TOKEN=ONEMAP_API_TOKEN:latest
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPOSITORY}/${_IMAGE}:$COMMIT_SHA
